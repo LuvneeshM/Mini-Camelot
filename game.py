@@ -2,6 +2,9 @@ from board import Board
 
 def main():
 	game_board = Board()
+
+	game_board.visual()
+
 	game_board.printBoard()
 
 	player = 0

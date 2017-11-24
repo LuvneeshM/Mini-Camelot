@@ -1,5 +1,7 @@
 import numpy as np
 import copy
+import tkinter as tk
+from tkinter import *
 
 class Board:
 
@@ -45,13 +47,64 @@ class Board:
 
 		self.setUpBoard()
 
+	#for ai stuff eventually
 	def clone(self):
 		deep_tmp = Board()
 		deep_tmp.board = copy.deepcopy(self.board)
 		deep_tmp.board = copy.deepcopy(self.white_pieces)
 		deep_tmp.board = copy.deepcopy(self.black_pieces)
 
+	#for viewing the game
+	def visual(self):
+		
+		sq_size = 40
+		h = sq_size*self.rows
+		w = sq_size*self.cols
+		self.main_gui = tk.Tk()
+		self.main_gui.geometry(str(w)+"x"+str(h))
+		self.main_gui.title("Camelot")
+		
+		canvas = tk.Canvas(self.main_gui, width=w,height=h, background="white")
+		
+		self.uiMakeCanvas(canvas, "LightBlue", sq_size)
+		
+		canvas.pack()
+		
 
+		self.main_gui.mainloop()
+		
+	def click(self, row, col):
+		print((row,col))
+	
+	def clickEvent(self, event):
+		print("Obj clicked", event.x, event.y)
+		print(event.widget.find_closest(event.x,event.y))
+
+	def uiMakeCanvas(self, canvas, color, sq_size):
+		for row in range(self.rows):
+			for col in range(self.cols):
+
+				#rect = canvas.create_rectangle(col*sq_size, row*sq_size, (col+1)*sq_size,(row+1)*sq_size, fill=color, tag="Square")
+					#canvas.tag_bind(rect, '<Button-1>',self.clickEvent)
+				
+				makeButton = False
+				button = tk.Button(text="%s,%s" % (row,col), command=lambda row=row, col=col: self.click(row,col), bg=color)
+				button.configure(width=sq_size, height=sq_size, activebackground="#33B5E5")
+				#white player
+				if ((row,col) in self.white_pieces):
+					makeButton = True
+					button.configure(bg="Red")
+				#black player
+				elif ((row,col) in self.black_pieces):
+					makeButton = True
+					button.configure(bg="Green")
+				#empty board pieces
+				elif ((row, col) not in self.unplayable_block):
+					makeButton = True
+					button.configure(bg=color)
+				#only make button if it is inside the game board
+				if makeButton:
+					button_window = canvas.create_window(sq_size/2+col*sq_size, sq_size/2+row*sq_size,width=sq_size, height=sq_size, window=button)
 	#used to show board on terminal
 	def printBoard(self):
 		print(self.board)
