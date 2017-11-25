@@ -48,7 +48,7 @@ class Board:
 		self.addPiece("black_4", 9,3)
 		self.addPiece("black_5", 9,4)
 		self.addPiece("black_6", 9,5)
-		self.addPiece("black_7", 6,4)
+	#	self.addPiece("black_7", 6,4)
 
 		self.setUpBoard()
 
@@ -199,8 +199,8 @@ class Board:
 		validate_move = self.checkMove(player, piece, move)
 		if validate_move != 0:
 			print("Board Before\n",self.board)
-			print("White Before\n", self.white_pieces)
-			print("Black Before\n", self.black_pieces)
+			#print("White Before\n", self.white_pieces)
+			#print("Black Before\n", self.black_pieces)
 
 			print ("MOVE MADE", validate_move)
 			#if capture move made, figure out the captured move
@@ -232,12 +232,12 @@ class Board:
 			self.updateButtons(piece_to_remove, piece, move)
 
 			print("Board After\n",self.board)
-			print("White After\n", self.white_pieces)
-			print("Black After\n", self.black_pieces)
+			#print("White After\n", self.white_pieces)
+			#print("Black After\n", self.black_pieces)
 
 			return True
 		else: 
-			print ("INVALID")
+			print ("move is invalid")
 			return False
 
 	def updateButtons(self, piece_to_remove, old_piece_place, new_piece_place):
@@ -258,20 +258,22 @@ class Board:
 				if piece in self.white_pieces:
 					#check all 3 moves
 					return self.checkThreeMoves(player,piece,move)
-				else: 
+				else:
+					print("moving a piece not white", piece, move) 
 					return 0
 			#black player
 			elif player == "black":
 				#valid black piece
 				if piece in self.black_pieces:
 					#check all 3 moves
-					print("I MADE IT HERE")
 					return self.checkThreeMoves(player, piece, move)
 				else:
+					print("moving a piece not black", piece, move)
 					return 0
 			else: 
 				raise
 		else:
+			print("tried to press a non-valid button")
 			return 0
 	
 	#checks all 3 moves
@@ -279,26 +281,47 @@ class Board:
 	#must make capture move if capture move available
 	def checkThreeMoves(self, player,piece, move):		
 		#check if capture move is mandatory
-		window = self.createWindowForMove(player, piece, "capt")
-		if len(window) != 0:
-			print("CAPTURE len(window)", len(window))
-			if move in window:
+		capture_move_list = self.createListOfCaptureMoves(player)
+		
+		#window = self.createWindowForMove(player, piece, "capt")
+		if len(capture_move_list) != 0:
+			if move in capture_move_list:
 				return 1
 			else:
+				print("Must make capture move")
 				return 0
 		#no capture move to make
 		#check if cantering move
 		#not mandatory
 		window = self.createWindowForMove(player, piece, "jump")
 		if len(window) != 0:
-			print("JUMP")
 			if move in window:
+				print ("Jumped")
 				return 2
 		#player made plain move
 		if self.normalMove(player, piece, move):
+			print("Normal")
 			return 3
 		else: 
+			print("nothing")
 			return 0
+
+	#since capture move is manadatory
+	#here is a list of them for the current player
+	#the list will be the end positions for of the move 
+	#i.e. if player is a 5,4 and enemy at 5,5 then position 5,6 is in the list (if nothing is in 5,6)
+	def createListOfCaptureMoves(self, player):
+		window = []
+		players_pieces = self.white_pieces if player=="white" else self.black_pieces
+		for piece_to_check in players_pieces:
+			print("piece", piece_to_check)
+			window_for_piece = self.createWindowForMove(player, piece_to_check, "capt")
+			print("len(window_for_piece)",len(window_for_piece))
+			if len(window_for_piece) != 0: 
+				for cant_think_of_name in window_for_piece:
+					window.append(cant_think_of_name)
+			
+		return window
 
 	#type is either capt (for capturing move) or jump (for cantering move)
 	#returns the window for the move made
@@ -308,10 +331,10 @@ class Board:
 		for row in range(piece[0]-1,piece[0]+2):
 			for col in range(piece[1]-1,piece[1]+2):
 				#out of bounds
-				if(col < 2 or col > 5 or row < 2 or row > 11):
+				if(col < 0 or col > self.cols-1 or row < 0 or row > self.rows-1):
 					continue
-		
 				#player white, aka 1
+				#print("r",row,"c",col)
 				if player == "white":
 					if (type == "capt" and self.board[row,col] == 2) or (type == "jump" and self.board[row,col] == 1):
 						self.createWindow(window, piece, row, col)
@@ -325,6 +348,7 @@ class Board:
 	def createWindow(self, window, piece, row, col):
 		#check to make sure there is room
 		#left 
+		print ("piece[1] - col",piece[1]-col)
 		if piece[1]-col == 1: 
 			#top
 			if piece[0]-row == 1:
@@ -367,7 +391,11 @@ class Board:
 	def normalMove(self, player, piece, move):
 		r_diff = piece[0]-move[0]
 		c_diff = piece[1]-move[1]
-		if (abs(r_diff) <= 1 and abs(c_diff) <= 1) and  not(r_diff != 0 and c_diff != 0) and (self.board[move[0],move[1]]==0):
+
+		print(r_diff)
+		print(c_diff)
+		
+		if (abs(r_diff) <= 1 and abs(c_diff) <= 1) and  not(r_diff == 0 and c_diff == 0) and (self.board[move[0],move[1]]==0 or self.board[move[0],move[1]]==4 and player=="black" or self.board[move[0],move[1]]==5 and player=="white"):
 			return True
 		else: 
 			return False
