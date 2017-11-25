@@ -54,7 +54,13 @@ class Board:
 		deep_tmp.board = copy.deepcopy(self.white_pieces)
 		deep_tmp.board = copy.deepcopy(self.black_pieces)
 
-	#for viewing the game
+	#used to show board on terminal
+	def printBoard(self):
+		print(self.board)
+
+	# ####################################################################################################################################
+	# visual the game
+	# ####################################################################################################################################
 	def visual(self):
 		
 		sq_size = 40
@@ -67,15 +73,27 @@ class Board:
 		canvas = tk.Canvas(self.main_gui, width=w,height=h, background="white")
 		
 		self.uiMakeCanvas(canvas, "LightBlue", sq_size)
-		
 		canvas.pack()
 		
+		#self.main_gui.update_idletasks()
+		#self.main_gui.update()
 
-		self.main_gui.mainloop()
+		#self.main_gui.mainloop()
 		
-	def click(self, row, col):
-		print((row,col))
-	
+	#Event Handlers
+	#User clicked one of their pieces
+	def clickPiece(self, row, col):
+		print("White picks:", (row,col))
+		return (row, col)
+	#P2/AI cliked a one of their pieces
+	def clickPieceBlack(self, row, col):
+		print("Black picks:", (row,col))
+		return (row, col)
+	#User clicked on location to move first clicked piece
+	def clickSquare(self, row, col):
+		print ("Move to:", (row,col))
+		return (row, col)
+	#this for was when rect = canvas.create_rectangle was a thing
 	def clickEvent(self, event):
 		print("Obj clicked", event.x, event.y)
 		print(event.widget.find_closest(event.x,event.y))
@@ -88,26 +106,32 @@ class Board:
 					#canvas.tag_bind(rect, '<Button-1>',self.clickEvent)
 				
 				makeButton = False
-				button = tk.Button(text="%s,%s" % (row,col), command=lambda row=row, col=col: self.click(row,col), bg=color)
+				button = tk.Button(text="%s,%s" % (row,col), bg=color)
 				button.configure(width=sq_size, height=sq_size, activebackground="#33B5E5")
 				#white player
 				if ((row,col) in self.white_pieces):
 					makeButton = True
-					button.configure(bg="Red")
+					button.configure(bg="Red", command=lambda row=row, col=col: self.clickPiece(row,col))
 				#black player
 				elif ((row,col) in self.black_pieces):
 					makeButton = True
-					button.configure(bg="Green")
+					button.configure(bg="Green", command=lambda row=row, col=col: self.clickPieceBlack(row,col))
 				#empty board pieces
 				elif ((row, col) not in self.unplayable_block):
 					makeButton = True
-					button.configure(bg=color)
+					button.configure(bg=color, command=lambda row=row, col=col: self.clickSquare(row,col))
 				#only make button if it is inside the game board
 				if makeButton:
 					button_window = canvas.create_window(sq_size/2+col*sq_size, sq_size/2+row*sq_size,width=sq_size, height=sq_size, window=button)
-	#used to show board on terminal
-	def printBoard(self):
-		print(self.board)
+	
+	# ####################################################################################################################################
+	# Set up the board
+	# addPiece - tracks the white/black pieces
+	# setUpBord - makes the board
+	# removeUnplayable - sets bounds
+	# placeCastle - puts castles on board
+	# placePieces - puts the game pieces
+	# ####################################################################################################################################
 
 	#track pieces that are white/black
 	def addPiece(self, name, row, col):
@@ -129,8 +153,10 @@ class Board:
 
 	#add the castle to the board
 	def placeCastle(self):
-		self.board[	([val[0] for val in self.white_castle]), ([val[1] for val in self.white_castle]) ] = 4
-		self.board[ ([val[0] for val in self.black_castle]), ([ val[1] for val in self.black_castle]) ] = 5
+		for val in self.white_castle:
+			self.board[val[0],val[1]] = 4
+		for val in self.black_castle:
+			self.board[val[0],val[1]] = 5
 
 	#place the player pieces
 	def placePieces(self):
@@ -139,7 +165,8 @@ class Board:
 		for key in self.black_pieces:
 			self.board[key[0]][key[1]] = 2
 
-	# ############################################
+	# ####################################################################################################################################
+	# Game Logic
 	# Checking the kind of move made
 	# validate_move
 	# 	1 is capture 
@@ -149,7 +176,7 @@ class Board:
 	# player is "white"/"black" 
 	# piece is piece to move --> tuple (r,c) will eventually be passing a board location so use tuples...
 	# move place piece will go to --> tuple (r,c)
-	# ############################################
+	# ####################################################################################################################################
 	def makeMove(self, player, piece, move):
 		validate_move = self.checkMove(player, piece, move)
 		if validate_move != 0:

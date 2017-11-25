@@ -10,6 +10,10 @@ def main():
 	player = 0
 
 	while True:
+		
+		game_board.main_gui.update_idletasks()
+		game_board.main_gui.update()
+		
 		#white 1
 		if player == 0:
 			print("player_1")
