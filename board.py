@@ -15,6 +15,9 @@ class Board:
 		#value = name of piece, white_# or black_#
 		self.white_pieces = {}
 		self.black_pieces = {}
+
+		self.all_buttons = {}
+
 		#positions outside the game
 		self.unplayable_block = [
 			(0,0), (0,1), (0,2), (0,5), (0,6), (0,7),
@@ -28,6 +31,8 @@ class Board:
 		self.white_castle = [(0,3),(0,4)]
 		#black player castle
 		self.black_castle = [(13,3),(13,4)]
+
+		self.two_part_move = []
 
 		#track player pieces
 		self.addPiece("white_1", 4,2)
@@ -73,6 +78,8 @@ class Board:
 		canvas = tk.Canvas(self.main_gui, width=w,height=h, background="white")
 		
 		self.uiMakeCanvas(canvas, "LightBlue", sq_size)
+		print("len(all_buttons)", len(self.all_buttons))
+
 		canvas.pack()
 		
 		#self.main_gui.update_idletasks()
@@ -83,16 +90,24 @@ class Board:
 	#Event Handlers
 	#User clicked one of their pieces
 	def clickPiece(self, row, col):
-		print("White picks:", (row,col))
+		self.two_part_move.append((row,col))
 		return (row, col)
+	'''
+	#CAUSE FUCK GUI DOING LOGIC
 	#P2/AI cliked a one of their pieces
 	def clickPieceBlack(self, row, col):
 		print("Black picks:", (row,col))
+		self.black_move.append((row,col))
 		return (row, col)
 	#User clicked on location to move first clicked piece
 	def clickSquare(self, row, col):
 		print ("Move to:", (row,col))
+		if len(self.white_move) == 1:
+			self.white_move.append((row,col))
+		elif len(self.black_move) == 1:
+			self.black_move.append((row,col))
 		return (row, col)
+	'''
 	#this for was when rect = canvas.create_rectangle was a thing
 	def clickEvent(self, event):
 		print("Obj clicked", event.x, event.y)
@@ -115,14 +130,15 @@ class Board:
 				#black player
 				elif ((row,col) in self.black_pieces):
 					makeButton = True
-					button.configure(bg="Green", command=lambda row=row, col=col: self.clickPieceBlack(row,col))
+					button.configure(bg="Green", command=lambda row=row, col=col: self.clickPiece(row,col))
 				#empty board pieces
 				elif ((row, col) not in self.unplayable_block):
 					makeButton = True
-					button.configure(bg=color, command=lambda row=row, col=col: self.clickSquare(row,col))
+					button.configure(bg=color, command=lambda row=row, col=col: self.clickPiece(row,col))
 				#only make button if it is inside the game board
 				if makeButton:
 					button_window = canvas.create_window(sq_size/2+col*sq_size, sq_size/2+row*sq_size,width=sq_size, height=sq_size, window=button)
+					self.all_buttons[(row,col)] = button
 	
 	# ####################################################################################################################################
 	# Set up the board
@@ -176,6 +192,8 @@ class Board:
 	# player is "white"/"black" 
 	# piece is piece to move --> tuple (r,c) will eventually be passing a board location so use tuples...
 	# move place piece will go to --> tuple (r,c)
+	# FOR GRAPHICS: 
+	# 	updateButtons: just changes the color of buttons cause logic is handled in backend :D
 	# ####################################################################################################################################
 	def makeMove(self, player, piece, move):
 		validate_move = self.checkMove(player, piece, move)
@@ -197,8 +215,6 @@ class Board:
 			if(player == "white"):
 				if(piece_to_remove != None):
 					self.black_pieces.pop(piece_to_remove)
-					print (piece)
-					print ((piece_to_remove))
 					self.board[piece_to_remove[0],piece_to_remove[1]] = 0
 				self.white_pieces[move] = self.white_pieces.pop(piece)
 				#update board
@@ -213,6 +229,8 @@ class Board:
 				self.board[piece[0],piece[1]] = 0
 				self.board[move[0], move[1]] = 2
 
+			self.updateButtons(piece_to_remove, piece, move)
+
 			print("Board After\n",self.board)
 			print("White After\n", self.white_pieces)
 			print("Black After\n", self.black_pieces)
@@ -221,6 +239,13 @@ class Board:
 		else: 
 			print ("INVALID")
 			return False
+
+	def updateButtons(self, piece_to_remove, old_piece_place, new_piece_place):
+		if piece_to_remove != None:
+			self.all_buttons[piece_to_remove].configure(bg="LightBlue")
+		temp_color = self.all_buttons[old_piece_place].cget("bg")
+		self.all_buttons[old_piece_place].configure(bg="LightBlue")
+		self.all_buttons[new_piece_place].configure(bg=str(temp_color))
 
 	#will check to see if move is valid
 	#if valid return true
@@ -240,6 +265,7 @@ class Board:
 				#valid black piece
 				if piece in self.black_pieces:
 					#check all 3 moves
+					print("I MADE IT HERE")
 					return self.checkThreeMoves(player, piece, move)
 				else:
 					return 0
@@ -255,6 +281,7 @@ class Board:
 		#check if capture move is mandatory
 		window = self.createWindowForMove(player, piece, "capt")
 		if len(window) != 0:
+			print("CAPTURE len(window)", len(window))
 			if move in window:
 				return 1
 			else:
@@ -264,6 +291,7 @@ class Board:
 		#not mandatory
 		window = self.createWindowForMove(player, piece, "jump")
 		if len(window) != 0:
+			print("JUMP")
 			if move in window:
 				return 2
 		#player made plain move
@@ -285,7 +313,7 @@ class Board:
 		
 				#player white, aka 1
 				if player == "white":
-					if (type == "capt" and self.board[row,col] == 2)	or (type == "jump" and self.board[row,col] == 1):
+					if (type == "capt" and self.board[row,col] == 2) or (type == "jump" and self.board[row,col] == 1):
 						self.createWindow(window, piece, row, col)
 				elif player == "black":
 					if (type == "capt" and self.board[row, col] == 1) or (type == "jump" and self.board[row,col] == 1):
