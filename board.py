@@ -9,6 +9,10 @@ class Board:
 		#grid dimensions
 		self.rows = 14
 		self.cols = 8
+
+		self.white_color = "Red"
+		self.black_color = "Green"
+
 		self.board = np.array([[0 for x in range(self.cols)] for y in range(self.rows)])
 		#dictionary for the pieces
 		#key = tuple of location
@@ -40,7 +44,7 @@ class Board:
 		self.addPiece("white_3", 4,4)
 		self.addPiece("white_4", 4,5)
 		self.addPiece("white_5", 5,3)
-		self.addPiece("white_6", 5,4)
+		self.addPiece("white_6", 5,4)	
 		#track ai pieces
 		self.addPiece("black_1", 8,3)
 		self.addPiece("black_2", 8,4)
@@ -48,7 +52,6 @@ class Board:
 		self.addPiece("black_4", 9,3)
 		self.addPiece("black_5", 9,4)
 		self.addPiece("black_6", 9,5)
-	#	self.addPiece("black_7", 6,4)
 
 		self.setUpBoard()
 
@@ -78,7 +81,6 @@ class Board:
 		canvas = tk.Canvas(self.main_gui, width=w,height=h, background="white")
 		
 		self.uiMakeCanvas(canvas, "LightBlue", sq_size)
-		print("len(all_buttons)", len(self.all_buttons))
 
 		canvas.pack()
 		
@@ -91,6 +93,7 @@ class Board:
 	#User clicked one of their pieces
 	def clickPiece(self, row, col):
 		self.two_part_move.append((row,col))
+		#self.all_buttons[(row,col)].configure(bg="White")
 		return (row, col)
 	'''
 	#CAUSE FUCK GUI DOING LOGIC
@@ -109,9 +112,9 @@ class Board:
 		return (row, col)
 	'''
 	#this for was when rect = canvas.create_rectangle was a thing
-	def clickEvent(self, event):
-		print("Obj clicked", event.x, event.y)
-		print(event.widget.find_closest(event.x,event.y))
+	#def clickEvent(self, event):
+	#	print("Obj clicked", event.x, event.y)
+	#	print(event.widget.find_closest(event.x,event.y))
 
 	def uiMakeCanvas(self, canvas, color, sq_size):
 		for row in range(self.rows):
@@ -126,11 +129,11 @@ class Board:
 				#white player
 				if ((row,col) in self.white_pieces):
 					makeButton = True
-					button.configure(bg="Red", command=lambda row=row, col=col: self.clickPiece(row,col))
+					button.configure(bg=self.white_color, command=lambda row=row, col=col: self.clickPiece(row,col))
 				#black player
 				elif ((row,col) in self.black_pieces):
 					makeButton = True
-					button.configure(bg="Green", command=lambda row=row, col=col: self.clickPiece(row,col))
+					button.configure(bg=self.black_color, command=lambda row=row, col=col: self.clickPiece(row,col))
 				#empty board pieces
 				elif ((row, col) not in self.unplayable_block):
 					makeButton = True
@@ -192,13 +195,14 @@ class Board:
 	# player is "white"/"black" 
 	# piece is piece to move --> tuple (r,c) will eventually be passing a board location so use tuples...
 	# move place piece will go to --> tuple (r,c)
+	# checkWin: check to see if someone has won, draw after move made
 	# FOR GRAPHICS: 
 	# 	updateButtons: just changes the color of buttons cause logic is handled in backend :D
 	# ####################################################################################################################################
 	def makeMove(self, player, piece, move):
 		validate_move = self.checkMove(player, piece, move)
 		if validate_move != 0:
-			print("Board Before\n",self.board)
+			#print("Board Before\n",self.board)
 			#print("White Before\n", self.white_pieces)
 			#print("Black Before\n", self.black_pieces)
 
@@ -229,21 +233,49 @@ class Board:
 				self.board[piece[0],piece[1]] = 0
 				self.board[move[0], move[1]] = 2
 
-			self.updateButtons(piece_to_remove, piece, move)
-
-			print("Board After\n",self.board)
+			self.updateButtons(player, piece_to_remove, piece, move)
+			
+			#print("Board After\n",self.board)
 			#print("White After\n", self.white_pieces)
 			#print("Black After\n", self.black_pieces)
 
 			return True
 		else: 
-			print ("move is invalid")
+			#temp_color = self.white_color if player =="white" else self.black_color
+			#self.all_buttons[piece].configure(bg=temp_color)
+			#self.all_buttons[move].configure(bg="LightBlue")
+			#print ("move is invalid")
 			return False
 
-	def updateButtons(self, piece_to_remove, old_piece_place, new_piece_place):
+	'''
+		Draw = 0
+		White = 1
+		Black = 2
+		Continue = 3
+	'''
+	def checkWin(self,player):
+		white_count = len(self.white_pieces)
+		black_count = len(self.black_pieces)
+
+		if (white_count == 1 and black_count == 1):
+			return 0
+		#white wins
+		if (len(set(self.white_pieces.keys()).intersection(self.black_castle)) == 2):
+			return 1
+		elif(white_count > 1 and black_count == 1):
+			return 1
+		#black wins
+		elif (len(set(self.black_pieces.keys()).intersection(self.white_castle)) == 2):
+			return 2
+		elif(white_count == 1 and black_count > 1):
+			return 2
+		return 3
+
+	def updateButtons(self, player, piece_to_remove, old_piece_place, new_piece_place):
 		if piece_to_remove != None:
 			self.all_buttons[piece_to_remove].configure(bg="LightBlue")
-		temp_color = self.all_buttons[old_piece_place].cget("bg")
+		temp_color = self.white_color if player =="white" else self.black_color
+		 #self.all_buttons[old_piece_place].cget("bg")
 		self.all_buttons[old_piece_place].configure(bg="LightBlue")
 		self.all_buttons[new_piece_place].configure(bg=str(temp_color))
 
@@ -294,6 +326,7 @@ class Board:
 		#check if cantering move
 		#not mandatory
 		window = self.createWindowForMove(player, piece, "jump")
+		print(len(window))
 		if len(window) != 0:
 			if move in window:
 				print ("Jumped")
@@ -314,9 +347,9 @@ class Board:
 		window = []
 		players_pieces = self.white_pieces if player=="white" else self.black_pieces
 		for piece_to_check in players_pieces:
-			print("piece", piece_to_check)
+			#print("piece", piece_to_check)
 			window_for_piece = self.createWindowForMove(player, piece_to_check, "capt")
-			print("len(window_for_piece)",len(window_for_piece))
+			#print("len(window_for_piece)",len(window_for_piece))
 			if len(window_for_piece) != 0: 
 				for cant_think_of_name in window_for_piece:
 					window.append(cant_think_of_name)
@@ -333,13 +366,16 @@ class Board:
 				#out of bounds
 				if(col < 0 or col > self.cols-1 or row < 0 or row > self.rows-1):
 					continue
+				if (row == 13 and (col == 3 or col==4)):
+					continue
+				#if (row == )
 				#player white, aka 1
 				#print("r",row,"c",col)
 				if player == "white":
 					if (type == "capt" and self.board[row,col] == 2) or (type == "jump" and self.board[row,col] == 1):
 						self.createWindow(window, piece, row, col)
 				elif player == "black":
-					if (type == "capt" and self.board[row, col] == 1) or (type == "jump" and self.board[row,col] == 1):
+					if (type == "capt" and self.board[row, col] == 1) or (type == "jump" and (self.board[row,col] == 2)):
 						self.createWindow(window, piece, row, col)
 
 		return window
@@ -348,54 +384,50 @@ class Board:
 	def createWindow(self, window, piece, row, col):
 		#check to make sure there is room
 		#left 
-		print ("piece[1] - col",piece[1]-col)
 		if piece[1]-col == 1: 
 			#top
 			if piece[0]-row == 1:
-				if self.board[row-1, col-1] == 0:
+				if self.board[row-1, col-1] == 0 or self.board[row-1, col-1] == 4 or self.board[row-1, col-1] == 5:
 					window.append((row-1,col-1))
 			#mid
 			elif piece[0]-row == 0:
-				if self.board[row, col-1] == 0:
+				if self.board[row, col-1] == 0  or self.board[row, col-1]  == 4 or self.board[row, col-1]  == 5:
 					window.append((row,col-1))
 			#bot
 			elif piece[0]-row == -1:
-				if self.board[row+1, col-1] == 0:
+				if self.board[row+1, col-1] == 0 or self.board[row+1, col-1] == 4 or self.board[row+1, col-1] == 5:
 					window.append((row+1,col-1))
 		#mid
 		elif piece[1]-col == 0:
 			#top
 			if piece[0]-row == 1:
-				if self.board[row-1,col] == 0:
+				if self.board[row-1,col] == 0 or self.board[row-1,col] == 4 or self.board[row-1,col] == 5:
 					window.append((row-1, col))
 			#bot
 			elif piece[0]-row == -1:
-				if self.board[row+1,col] == 0:
+				if self.board[row+1,col] == 0 or self.board[row+1,col] == 4 or self.board[row+1,col] == 5:
 					window.append((row+1, col))
 		#right
 		elif piece[1]-col == -1: 
 			#top
 			if piece[0]-row == 1:
-				if self.board[row-1, col+1] == 0:
+				if self.board[row-1, col+1] == 0 or self.board[row-1, col+1] == 4 or self.board[row-1, col+1] == 5:
 					window.append((row-1, col+1))
 			#mid
 			elif piece[0]-row == 0:
-				if self.board[row, col+1] == 0:
+				if self.board[row, col+1] == 0 or self.board[row, col+1] == 4 or self.board[row, col+1] == 5:
 					window.append((row, col+1))
 			#bot
 			elif piece[0]-row == -1:
-				if self.board[row+1, col+1] == 0:
+				if self.board[row+1, col+1] == 0 or self.boar[row+1, col+1] == 4 or self.board[row+1, col+1] == 5:
 					window.append((row+1, col+1))
 	
 	#player made a normal move
 	def normalMove(self, player, piece, move):
 		r_diff = piece[0]-move[0]
 		c_diff = piece[1]-move[1]
-
-		print(r_diff)
-		print(c_diff)
 		
-		if (abs(r_diff) <= 1 and abs(c_diff) <= 1) and  not(r_diff == 0 and c_diff == 0) and (self.board[move[0],move[1]]==0 or self.board[move[0],move[1]]==4 and player=="black" or self.board[move[0],move[1]]==5 and player=="white"):
+		if (abs(r_diff) <= 1 and abs(c_diff) <= 1) and  not(r_diff == 0 and c_diff == 0) and (self.board[move[0],move[1]]==0 or self.board[move[0],move[1]]==4 or self.board[move[0],move[1]]==5):
 			return True
 		else: 
 			return False

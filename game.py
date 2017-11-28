@@ -12,48 +12,68 @@ def main():
 	changePlayer = False
 
 	printName = True
+	printWin = True
+	'''
+		Draw = 0
+		White = 1
+		Black = 2
+		Continue  = 3
+	'''
+	gameOn = 3
 
 	while True:
 		
 		game_board.main_gui.update_idletasks()
 		game_board.main_gui.update()
 
-		#white 0
-		if player == 0:
-			if printName:
-				print("player 1")
-				printName = False
-			if(len(game_board.two_part_move) == 2):
-				piece = game_board.two_part_move[0]
-				move = game_board.two_part_move[1]
-				is_valid_move = game_board.makeMove("white", piece, move)
-				game_board.two_part_move = []
-				if(is_valid_move):
-					changePlayer = True
-					print ("valid")
-				else:
-					changePlayer = False
-					print("invalid, try again")
-		elif player == 1:
-			if printName:
-				print("player 2")
-				printName = False
-			if(len(game_board.two_part_move) == 2):
-				piece = game_board.two_part_move[0]
-				move = game_board.two_part_move[1]
-				is_valid_move = game_board.makeMove("black", piece, move)
-				game_board.two_part_move = []
-				if(is_valid_move):
-					changePlayer = True
-					print("valid")
-				else: 
-					changePlayer = False
-					print("invalid, try again")
+		if gameOn == 3:
+			#white 0
+			if player == 0:
+				if printName:
+					print("player 1")
+					printName = False
+				if(len(game_board.two_part_move) == 2):
+					piece = game_board.two_part_move[0]
+					move = game_board.two_part_move[1]
+					is_valid_move = game_board.makeMove("white", piece, move)
+					gameOn = game_board.checkWin(player)
+					game_board.two_part_move = []
+					if(is_valid_move):
+						changePlayer = True
+						print ("valid")
+					else:
+						changePlayer = False
+						print("invalid, try again")
+			elif player == 1:
+				if printName:
+					print("player 2")
+					printName = False
+				if(len(game_board.two_part_move) == 2):
+					piece = game_board.two_part_move[0]
+					move = game_board.two_part_move[1]
+					is_valid_move = game_board.makeMove("black", piece, move)
+					gameOn = game_board.checkWin(player)
+					game_board.two_part_move = []
+					if(is_valid_move):
+						changePlayer = True
+						print("valid")
+					else: 
+						changePlayer = False
+						print("invalid, try again")
 
-		if changePlayer == True:
-			player = (player+1)%2
-			changePlayer = False
-			printName = True
+			if changePlayer == True:
+				player = (player+1)%2
+				changePlayer = False
+				printName = True
+		elif gameOn == 0 and printWin:
+			print("Draw")
+			printWin = False
+		elif gameOn == 1 and printWin:
+			print("White Wins")
+			printWin = False
+		elif gameOn == 2 and printWin:
+			print("Black Wins")
+			printWin = False
 
 		
 		'''
