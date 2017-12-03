@@ -37,7 +37,6 @@ def main():
 					move = game_board.two_part_move[1]
 					is_valid_move = game_board.makeMove("white", piece, move)
 					gameOn = game_board.checkWin(player)
-					game_board.two_part_move = []
 					if(is_valid_move):
 						changePlayer = True
 						print ("valid")

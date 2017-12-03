@@ -10,8 +10,8 @@ class Board:
 		self.rows = 14
 		self.cols = 8
 
-		self.white_color = "Red"
-		self.black_color = "Green"
+		self.white_color = "White"
+		self.black_color = "Black"
 
 		self.board = np.array([[0 for x in range(self.cols)] for y in range(self.rows)])
 		#dictionary for the pieces
@@ -36,7 +36,9 @@ class Board:
 		#black player castle
 		self.black_castle = [(13,3),(13,4)]
 
+		#track the two pieces to swap for the player
 		self.two_part_move = []
+		self.two_part_color = []
 
 		#track player pieces
 		self.addPiece("white_1", 4,2)
@@ -78,53 +80,27 @@ class Board:
 		self.main_gui.geometry(str(w)+"x"+str(h))
 		self.main_gui.title("Camelot")
 		
-		canvas = tk.Canvas(self.main_gui, width=w,height=h, background="white")
+		canvas = tk.Canvas(self.main_gui, width=w,height=h, background="White")
 		
 		self.uiMakeCanvas(canvas, "LightBlue", sq_size)
 
 		canvas.pack()
 		
-		#self.main_gui.update_idletasks()
-		#self.main_gui.update()
-
-		#self.main_gui.mainloop()
-		
 	#Event Handlers
 	#User clicked one of their pieces
 	def clickPiece(self, row, col):
 		self.two_part_move.append((row,col))
-		#self.all_buttons[(row,col)].configure(bg="White")
-		return (row, col)
-	'''
-	#CAUSE FUCK GUI DOING LOGIC
-	#P2/AI cliked a one of their pieces
-	def clickPieceBlack(self, row, col):
-		print("Black picks:", (row,col))
-		self.black_move.append((row,col))
-		return (row, col)
-	#User clicked on location to move first clicked piece
-	def clickSquare(self, row, col):
-		print ("Move to:", (row,col))
-		if len(self.white_move) == 1:
-			self.white_move.append((row,col))
-		elif len(self.black_move) == 1:
-			self.black_move.append((row,col))
-		return (row, col)
-	'''
-	#this for was when rect = canvas.create_rectangle was a thing
-	#def clickEvent(self, event):
-	#	print("Obj clicked", event.x, event.y)
-	#	print(event.widget.find_closest(event.x,event.y))
+		self.two_part_color.append(self.all_buttons[(row,col)].cget("bg"))
+		self.all_buttons[(row,col)].configure(bg="Yellow")
 
+		return (row, col)
+	
 	def uiMakeCanvas(self, canvas, color, sq_size):
 		for row in range(self.rows):
 			for col in range(self.cols):
 
-				#rect = canvas.create_rectangle(col*sq_size, row*sq_size, (col+1)*sq_size,(row+1)*sq_size, fill=color, tag="Square")
-					#canvas.tag_bind(rect, '<Button-1>',self.clickEvent)
-				
 				makeButton = False
-				button = tk.Button(text="%s,%s" % (row,col), bg=color)
+				button = tk.Button(text="%s,%s" % (row,col), bg=color, fg="Magenta")
 				button.configure(width=sq_size, height=sq_size, activebackground="#33B5E5")
 				#white player
 				if ((row,col) in self.white_pieces):
@@ -200,6 +176,8 @@ class Board:
 	# 	updateButtons: just changes the color of buttons cause logic is handled in backend :D
 	# ####################################################################################################################################
 	def makeMove(self, player, piece, move):
+		goodMove = False
+
 		validate_move = self.checkMove(player, piece, move)
 		if validate_move != 0:
 			#print("Board Before\n",self.board)
@@ -234,18 +212,27 @@ class Board:
 				self.board[move[0], move[1]] = 2
 
 			self.updateButtons(player, piece_to_remove, piece, move)
-			
+
 			#print("Board After\n",self.board)
 			#print("White After\n", self.white_pieces)
 			#print("Black After\n", self.black_pieces)
 
-			return True
+			goodMove = True
 		else: 
+			self.all_buttons[piece].configure(bg=self.two_part_color[0])
+			self.all_buttons[move].configure(bg=self.two_part_color[1])
+			
 			#temp_color = self.white_color if player =="white" else self.black_color
 			#self.all_buttons[piece].configure(bg=temp_color)
 			#self.all_buttons[move].configure(bg="LightBlue")
 			#print ("move is invalid")
-			return False
+			goodMove = False
+
+		#soft reset the two part move
+		self.two_part_move = []
+		self.two_part_color = []
+
+		return goodMove
 
 	'''
 		Draw = 0
