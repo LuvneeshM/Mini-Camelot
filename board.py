@@ -49,11 +49,11 @@ class Board:
 		self.addPiece("white_6", 5,4)	
 		#track ai pieces
 		self.addPiece("black_1", 8,3)
-		self.addPiece("black_2", 8,4)
-		self.addPiece("black_3", 9,2)
-		self.addPiece("black_4", 9,3)
-		self.addPiece("black_5", 9,4)
-		self.addPiece("black_6", 9,5)
+	#	self.addPiece("black_2", 8,4)
+	#	self.addPiece("black_3", 9,2)
+	#	self.addPiece("black_4", 9,3)
+	#	self.addPiece("black_5", 9,4)
+	#	self.addPiece("black_6", 9,5)
 
 		self.setUpBoard()
 
@@ -119,6 +119,21 @@ class Board:
 					button_window = canvas.create_window(sq_size/2+col*sq_size, sq_size/2+row*sq_size,width=sq_size, height=sq_size, window=button)
 					self.all_buttons[(row,col)] = button
 	
+	def makeCanvasWinner(self, winner):
+		
+		h = 250
+		w = 300
+		
+		self.main_gui = tk.Tk()
+		canvas = tk.Canvas(self.main_gui, width=w,height=h, background="White")
+		
+		winner_id = canvas.create_text(w/2, h/2, anchor="c", font=("Purisa", 25))
+		instruct_id = canvas.create_text(w/2, h/2 + 30, anchor="c",font=("Purisa", 20))
+		canvas.itemconfig(winner_id, text=winner)
+		canvas.itemconfig(instruct_id, text="Please close the game!")
+
+		canvas.pack()
+
 	# ####################################################################################################################################
 	# Set up the board
 	# addPiece - tracks the white/black pieces

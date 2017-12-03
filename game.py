@@ -52,7 +52,6 @@ def main():
 					move = game_board.two_part_move[1]
 					is_valid_move = game_board.makeMove("black", piece, move)
 					gameOn = game_board.checkWin(player)
-					game_board.two_part_move = []
 					if(is_valid_move):
 						changePlayer = True
 						print("valid")
@@ -66,12 +65,15 @@ def main():
 				printName = True
 		elif gameOn == 0 and printWin:
 			print("Draw")
+			game_board.makeCanvasWinner("Its a Draw")
 			printWin = False
 		elif gameOn == 1 and printWin:
 			print("White Wins")
+			game_board.makeCanvasWinner("Player Wins")
 			printWin = False
 		elif gameOn == 2 and printWin:
 			print("Black Wins")
+			game_board.makeCanvasWinner("AI Wins")
 			printWin = False
 
 		
