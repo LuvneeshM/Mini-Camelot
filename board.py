@@ -63,15 +63,23 @@ class Board:
 	def clone(self):
 		deep_tmp = Board()
 		deep_tmp.board = copy.deepcopy(self.board)
-		deep_tmp.board = copy.deepcopy(self.white_pieces)
-		deep_tmp.board = copy.deepcopy(self.black_pieces)
+		deep_tmp.white_pieces = copy.deepcopy(self.white_pieces)
+		deep_tmp.black_pieces = copy.deepcopy(self.black_pieces)
+		deep_tmp.all_buttons = copy.deepcopy(self.all_buttons)
+		deep_tmp.unplayable_block = copy.deepcopy(self.unplayable_block)
+		deep_tmp.white_castle = copy.deepcopy(self.white_castle)
+		deep_tmp.black_castle = copy.deepcopy(self.black_castle)
+		deep_tmp.two_part_move = copy.deepcopy(self.two_part_move)
+		deep_tmp.two_part_color = copy.deepcopy(self.two_part_color)
 
 	def getDictOfAllMoves(self, player):
 		#dictionary key = piece from black pieces
 		#dictionary values = all the possible locations that piece can legally move to
 		move_dict = {}
 		#capture moves
-		move_dict = self.createListOfCaptureMoves(player)
+		#Might wanna make AI call this function itself before calling getDictOfAllMoves
+		#only call getFidt ofAllMoves if there are no capture moves
+		#move_dict = self.createListOfCaptureMoves(player)
 		
 		if(player == "black"):
 			for b_p in self.black_pieces:
@@ -105,8 +113,8 @@ class Board:
 						move_dict[b_p].extend(norm_moves)
 					else:
 						move_dict[b_p] = norm_moves
-		#else:
-		#	raise
+		else:
+			raise
 
 		return move_dict
 

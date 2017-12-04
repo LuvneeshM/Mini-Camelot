@@ -34,7 +34,7 @@ def main():
 				if printName:
 					print("player 1")
 					printName = False
-					print(game_board.getDictOfAllMoves("white"))
+					print ((game_board.getDictOfAllMoves("white").values()))
 				if(len(game_board.two_part_move) == 2):
 					piece = game_board.two_part_move[0]
 					move = game_board.two_part_move[1]
