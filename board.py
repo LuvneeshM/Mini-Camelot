@@ -49,21 +49,77 @@ class Board:
 		self.addPiece("white_6", 5,4)	
 		#track ai pieces
 		self.addPiece("black_1", 8,3)
-	#	self.addPiece("black_2", 8,4)
-	#	self.addPiece("black_3", 9,2)
-	#	self.addPiece("black_4", 9,3)
-	#	self.addPiece("black_5", 9,4)
-	#	self.addPiece("black_6", 9,5)
+		self.addPiece("black_2", 8,4)
+		self.addPiece("black_3", 9,2)
+		self.addPiece("black_4", 9,3)
+		self.addPiece("black_5", 9,4)
+		self.addPiece("black_6", 9,5)
 
 		self.setUpBoard()
 
+	# ####################################################################################################################################
 	#for ai stuff eventually
+	# ####################################################################################################################################
 	def clone(self):
 		deep_tmp = Board()
 		deep_tmp.board = copy.deepcopy(self.board)
 		deep_tmp.board = copy.deepcopy(self.white_pieces)
 		deep_tmp.board = copy.deepcopy(self.black_pieces)
 
+	def getDictOfAllMoves(self, player):
+		#dictionary key = piece from black pieces
+		#dictionary values = all the possible locations that piece can legally move to
+		move_dict = {}
+		#capture moves
+		move_dict = self.createListOfCaptureMoves(player)
+		
+		if(player == "black"):
+			for b_p in self.black_pieces:
+				#jump moves
+				window = self.createWindowForMove(player, b_p, "jump")
+				if(len(window) != 0):
+					if b_p in move_dict:
+						move_dict[b_p].extend(window)
+					else:
+						move_dict[b_p] = window
+				#normal moves
+				norm_moves = self.createListOfNormalMoves(player, b_p)
+				if(len(window) != 0):
+					if b_p in move_dict:
+						move_dict[b_p].extend(norm_moves)
+					else:
+						move_dict[b_p] = norm_moves
+		elif(player == "white"):
+			for b_p in self.white_pieces:
+				#jump moves
+				window = self.createWindowForMove(player, b_p, "jump")
+				if(len(window) != 0):
+					if b_p in move_dict:
+						move_dict[b_p].extend(window)
+					else:
+						move_dict[b_p] = window
+				#normal moves
+				norm_moves = self.createListOfNormalMoves(player, b_p)
+				if(len(norm_moves) != 0):
+					if b_p in move_dict:
+						move_dict[b_p].extend(norm_moves)
+					else:
+						move_dict[b_p] = norm_moves
+		#else:
+		#	raise
+
+		return move_dict
+
+	def createListOfNormalMoves(self, player, piece):
+		moves_list = []
+		for row in range(piece[0]-1,piece[0]+2):
+			for col in range(piece[1]-1,piece[1]+2):
+				#out of bounds
+				if(col < 0 or col > self.cols-1 or row < 0 or row > self.rows-1):
+					continue
+				if self.board[row][col] == 0:
+					moves_list.append((row,col))
+		return moves_list
 	#used to show board on terminal
 	def printBoard(self):
 		print(self.board)
@@ -316,11 +372,18 @@ class Board:
 	def checkThreeMoves(self, player,piece, move):		
 		#check if capture move is mandatory
 		capture_move_list = self.createListOfCaptureMoves(player)
-		
+		print(capture_move_list)
 		#window = self.createWindowForMove(player, piece, "capt")
-		if len(capture_move_list) != 0:
-			if move in capture_move_list:
-				return 1
+		if len(capture_move_list.keys()) != 0:
+			if piece in capture_move_list:
+				print("Hi")
+				print(set(capture_move_list[piece]))
+				print(len(set(capture_move_list[piece])))
+				if move in set(capture_move_list[piece]):
+					print("Hi part 2")
+					return 1
+				else:
+					return 0
 			else:
 				print("Must make capture move")
 				return 0
@@ -346,7 +409,7 @@ class Board:
 	#the list will be the end positions for of the move 
 	#i.e. if player is a 5,4 and enemy at 5,5 then position 5,6 is in the list (if nothing is in 5,6)
 	def createListOfCaptureMoves(self, player):
-		window = []
+		window = {}
 		players_pieces = self.white_pieces if player=="white" else self.black_pieces
 		for piece_to_check in players_pieces:
 			#print("piece", piece_to_check)
@@ -354,7 +417,10 @@ class Board:
 			#print("len(window_for_piece)",len(window_for_piece))
 			if len(window_for_piece) != 0: 
 				for cant_think_of_name in window_for_piece:
-					window.append(cant_think_of_name)
+					if piece_to_check in window:
+						window[piece_to_check].append(cant_think_of_name)
+					else:
+						window[piece_to_check] = [cant_think_of_name]
 			
 		return window
 
