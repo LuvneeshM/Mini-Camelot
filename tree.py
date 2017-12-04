@@ -13,7 +13,7 @@ class Node:
 		#state
 		self.board = None
 		#List<Node> childarray
-		self.childArray = []
+		self.child_array = []
 		#(tuple_1, tuple_2)
 		self.my_move = None
 		#my parent
@@ -25,7 +25,7 @@ class Node:
 		temp_deep = Node()
 
 		temp_deep.board = self.board.clone()
-		temp_deep.childArray = copy.deepcopy(self.childArray)
+		temp_deep.child_array = copy.deepcopy(self.child_array)
 		temp_deep.my_move = copy.deepcopy(self.my_move)
 		temp_deep.parent = self.parent
 		temp_deep.depth = self.depth

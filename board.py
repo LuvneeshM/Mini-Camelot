@@ -7,8 +7,8 @@ class Board:
 
 	def __init__(self):
 		#grid dimensions
-		self.rows = 14
-		self.cols = 8
+		self.rows = 14+2
+		self.cols = 8+2
 
 		self.white_color = "White"
 		self.black_color = "Black"
@@ -24,36 +24,46 @@ class Board:
 
 		#positions outside the game
 		self.unplayable_block = [
-			(0,0), (0,1), (0,2), (0,5), (0,6), (0,7),
-			(1,0), (1,1), (1,6), (1,7),
-			(2,0), (2,7),
-			(11,0), (11,7),
-			(12,0), (12,1), (12,6), (12,7),
-			(13,0), (13,1), (13,2), (13,5), (13,6), (13,7)
+			(0,0), (0,1),(0,2), (0,3), (0,4), (0,5), (0,6), (0,7), (0,8), (0,9),
+			(1,0), (1,1), (1,2), (1,3), (1,6), (1,7), (1,8), (1,9),
+			(2,0), (2,1), (2,2), (2,7), (2,8), (2,9),
+			(3,0), (3,1), (3,8), (3,9),
+			(4,0), (4,9),
+			(5,0), (5,9),
+			(6,0), (6,9),
+			(7,0), (7,9),
+			(8,0), (8,9),
+			(9,0), (9,9),
+			(10,0), (10,9),
+			(11,0), (11,9),
+			(12,0), (12,1), (12,8), (12,9),
+			(13,0), (13,1), (13,2), (13,7), (13,8), (13,9),
+			(14,0), (14,1), (14,2), (14,3), (14,6), (14,7), (14,8), (14,9),
+			(15,0), (15,1),(15,2), (15,3), (15,4), (15,5), (15,6), (15,7), (15,8), (15,9)
 		]
 		#white player castle
-		self.white_castle = [(0,3),(0,4)]
+		self.white_castle = [(1,4),(1,5)]
 		#black player castle
-		self.black_castle = [(13,3),(13,4)]
+		self.black_castle = [(14,4),(14,5)]
 
 		#track the two pieces to swap for the player
 		self.two_part_move = []
 		self.two_part_color = []
 
 		#track player pieces
-		self.addPiece("white_1", 4,2)
-		self.addPiece("white_2", 4,3)
-		self.addPiece("white_3", 4,4)
-		self.addPiece("white_4", 4,5)
-		self.addPiece("white_5", 5,3)
-		self.addPiece("white_6", 5,4)	
+		self.addPiece("white_1", 5,3)
+		self.addPiece("white_2", 5,4)
+		self.addPiece("white_3", 5,5)
+		self.addPiece("white_4", 5,6)
+		self.addPiece("white_5", 6,4)
+		self.addPiece("white_6", 6,5)	
 		#track ai pieces
-		self.addPiece("black_1", 8,3)
-		self.addPiece("black_2", 8,4)
-		self.addPiece("black_3", 9,2)
-		self.addPiece("black_4", 9,3)
-		self.addPiece("black_5", 9,4)
-		self.addPiece("black_6", 9,5)
+		self.addPiece("black_1", 9,4)
+		self.addPiece("black_2", 9,5)
+		self.addPiece("black_3", 10,3)
+		self.addPiece("black_4", 10,4)
+		self.addPiece("black_5", 10,5)
+		self.addPiece("black_6", 10,6)
 
 		self.setUpBoard()
 
@@ -65,12 +75,14 @@ class Board:
 		deep_tmp.board = copy.deepcopy(self.board)
 		deep_tmp.white_pieces = copy.deepcopy(self.white_pieces)
 		deep_tmp.black_pieces = copy.deepcopy(self.black_pieces)
-		deep_tmp.all_buttons = copy.deepcopy(self.all_buttons)
+		deep_tmp.all_buttons = (self.all_buttons)
 		deep_tmp.unplayable_block = copy.deepcopy(self.unplayable_block)
 		deep_tmp.white_castle = copy.deepcopy(self.white_castle)
 		deep_tmp.black_castle = copy.deepcopy(self.black_castle)
 		deep_tmp.two_part_move = copy.deepcopy(self.two_part_move)
 		deep_tmp.two_part_color = copy.deepcopy(self.two_part_color)
+
+		return deep_tmp
 
 	def getDictOfAllMoves(self, player):
 		#dictionary key = piece from black pieces
@@ -92,7 +104,7 @@ class Board:
 						move_dict[b_p] = window
 				#normal moves
 				norm_moves = self.createListOfNormalMoves(player, b_p)
-				if(len(window) != 0):
+				if(len(norm_moves) != 0):
 					if b_p in move_dict:
 						move_dict[b_p].extend(norm_moves)
 					else:
@@ -170,6 +182,10 @@ class Board:
 				if ((row,col) in self.white_pieces):
 					makeButton = True
 					button.configure(bg=self.white_color, command=lambda row=row, col=col: self.clickPiece(row,col))
+				#castle
+				elif ((row,col) in self.white_castle or (row,col) in self.black_castle):
+					makeButton = True
+					button.configure(bg="Green", command=lambda row=row, col=col: self.clickPiece(row,col))
 				#black player
 				elif ((row,col) in self.black_pieces):
 					makeButton = True
@@ -263,7 +279,7 @@ class Board:
 			#print("White Before\n", self.white_pieces)
 			#print("Black Before\n", self.black_pieces)
 
-			print ("MOVE MADE", validate_move)
+			#print("make_move MOVE MADE", validate_move)
 			#if capture move made, figure out the captured move
 			piece_to_remove = None
 			if (validate_move == 1):
@@ -380,15 +396,15 @@ class Board:
 	def checkThreeMoves(self, player,piece, move):		
 		#check if capture move is mandatory
 		capture_move_list = self.createListOfCaptureMoves(player)
-		print(capture_move_list)
+		#print("capture_move_list",capture_move_list)
 		#window = self.createWindowForMove(player, piece, "capt")
 		if len(capture_move_list.keys()) != 0:
 			if piece in capture_move_list:
-				print("Hi")
-				print(set(capture_move_list[piece]))
-				print(len(set(capture_move_list[piece])))
+				#print("Hi")
+				#print(set(capture_move_list[piece]))
+				#print(len(set(capture_move_list[piece])))
 				if move in set(capture_move_list[piece]):
-					print("Hi part 2")
+					#print("Hi part 2")
 					return 1
 				else:
 					return 0
@@ -399,17 +415,17 @@ class Board:
 		#check if cantering move
 		#not mandatory
 		window = self.createWindowForMove(player, piece, "jump")
-		print(len(window))
+		#print("window length for jump",len(window))
 		if len(window) != 0:
 			if move in window:
-				print ("Jumped")
+				#print ("Jumped")
 				return 2
 		#player made plain move
 		if self.normalMove(player, piece, move):
-			print("Normal")
+			#print("Normal")
 			return 3
 		else: 
-			print("nothing")
+			#print("nothing")
 			return 0
 
 	#since capture move is manadatory
@@ -495,7 +511,7 @@ class Board:
 					window.append((row, col+1))
 			#bot
 			elif piece[0]-row == -1:
-				if self.board[row+1, col+1] == 0 or self.boar[row+1, col+1] == 4 or self.board[row+1, col+1] == 5:
+				if self.board[row+1, col+1] == 0 or self.board[row+1, col+1] == 4 or self.board[row+1, col+1] == 5:
 					window.append((row+1, col+1))
 	
 	#player made a normal move

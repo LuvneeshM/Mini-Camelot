@@ -1,5 +1,5 @@
 from board import Board
-
+from alphaBetaAgent import AlphaBetaAgent
 
 
 def main():
@@ -23,6 +23,13 @@ def main():
 	'''
 	gameOn = 3
 
+	#one shot
+	aB_agent = AlphaBetaAgent()
+	aB_board = game_board.clone()
+	aB_agent_move = aB_agent.alphaBetaSearch(aB_board)
+	print("I AM FREE")
+	print (aB_agent_move)
+	'''
 	while True:
 		
 		game_board.main_gui.update_idletasks()
@@ -79,8 +86,8 @@ def main():
 			game_board.makeCanvasWinner("AI Wins")
 			printWin = False
 
-		
-		'''
+	'''	
+	'''
 		#white 1
 		if player == 0:
 			print("player_1")
@@ -97,6 +104,6 @@ def main():
 				piece = tuple(int(x.strip()) for x in input("pick piece ").split(','))
 				move = tuple(int(x.strip()) for x in input("make move ").split(','))
 		player = (player+1)%2
-		'''
+	'''
 if __name__ == '__main__':
 	main()
