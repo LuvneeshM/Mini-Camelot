@@ -178,22 +178,22 @@ class Board:
 				makeButton = False
 				button = tk.Button(text="%s,%s" % (row,col), bg=color, fg="Magenta")
 				button.configure(width=sq_size, height=sq_size, activebackground="#33B5E5")
-				#white player
-				if ((row,col) in self.white_pieces):
-					makeButton = True
-					button.configure(bg=self.white_color, command=lambda row=row, col=col: self.clickPiece(row,col))
 				#castle
-				elif ((row,col) in self.white_castle or (row,col) in self.black_castle):
+				if ((row,col) in self.white_castle or (row,col) in self.black_castle):
 					makeButton = True
 					button.configure(bg="Green", command=lambda row=row, col=col: self.clickPiece(row,col))
-				#black player
-				elif ((row,col) in self.black_pieces):
-					makeButton = True
-					button.configure(bg=self.black_color, command=lambda row=row, col=col: self.clickPiece(row,col))
 				#empty board pieces
 				elif ((row, col) not in self.unplayable_block):
 					makeButton = True
 					button.configure(bg=color, command=lambda row=row, col=col: self.clickPiece(row,col))
+				#white player
+				if ((row,col) in self.white_pieces):
+					makeButton = True
+					button.configure(bg=self.white_color, command=lambda row=row, col=col: self.clickPiece(row,col))
+				#black player
+				elif ((row,col) in self.black_pieces):
+					makeButton = True
+					button.configure(bg=self.black_color, command=lambda row=row, col=col: self.clickPiece(row,col))
 				#only make button if it is inside the game board
 				if makeButton:
 					button_window = canvas.create_window(sq_size/2+col*sq_size, sq_size/2+row*sq_size,width=sq_size, height=sq_size, window=button)
@@ -316,7 +316,8 @@ class Board:
 		else: 
 			if should_i_graphic == True:
 				self.all_buttons[piece].configure(bg=self.two_part_color[0])
-				self.all_buttons[move].configure(bg=self.two_part_color[1])
+				if piece != move:
+					self.all_buttons[move].configure(bg=self.two_part_color[1])
 			
 			#temp_color = self.white_color if player =="white" else self.black_color
 			#self.all_buttons[piece].configure(bg=temp_color)

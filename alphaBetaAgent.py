@@ -11,6 +11,7 @@ class AlphaBetaAgent:
 		self.nodes = 0
 		self.prune_in_max = 0
 		self.prune_in_min = 0
+		self.max_depth = 5
 
 
 	def alphaBetaSearch(self, board):
@@ -111,6 +112,10 @@ class AlphaBetaAgent:
 			print("over 10", player)
 			return True
 		
+		#max depth
+		if node.depth == self.max_depth:
+			print("max depth reached")
+			return True
 		'''
 		Draw = 0
 		White = 1
