@@ -29,7 +29,7 @@ def main():
 	aB_agent_move = aB_agent.alphaBetaSearch(aB_board)
 	print("I AM FREE")
 	print (aB_agent_move)
-	'''
+	
 	while True:
 		
 		game_board.main_gui.update_idletasks()
@@ -41,11 +41,11 @@ def main():
 				if printName:
 					print("player 1")
 					printName = False
-					print ((game_board.getDictOfAllMoves("white").values()))
+					
 				if(len(game_board.two_part_move) == 2):
 					piece = game_board.two_part_move[0]
 					move = game_board.two_part_move[1]
-					is_valid_move = game_board.makeMove("white", piece, move)
+					is_valid_move = game_board.makeMove("white", piece, move, True)
 					gameOn = game_board.checkWin(player)
 					if(is_valid_move):
 						changePlayer = True
@@ -57,18 +57,30 @@ def main():
 				if printName:
 					print("player 2")
 					printName = False
-				if(len(game_board.two_part_move) == 2):
-					piece = game_board.two_part_move[0]
-					move = game_board.two_part_move[1]
-					is_valid_move = game_board.makeMove("black", piece, move)
-					gameOn = game_board.checkWin(player)
-					if(is_valid_move):
-						changePlayer = True
-						print("valid")
-					else: 
-						changePlayer = False
-						print("invalid, try again")
-
+				aB_board = game_board.clone()
+				aB_agent_move = aB_agent.alphaBetaSearch(aB_board)
+				print("aB move", aB_agent_move)
+				is_valid_move = game_board.makeMove("black", aB_agent_move[0], aB_agent_move[1], True)
+				gameOn = game_board.checkWin(player)
+				if(is_valid_move):
+					changePlayer = True
+					print ("valid")
+				else:
+					changePlayer = False
+					print("invalid, try again")
+				
+#				if(len(game_board.two_part_move) == 2):
+#					piece = game_board.two_part_move[0]
+#					move = game_board.two_part_move[1]
+#					is_valid_move = game_board.makeMove("black", piece, move)
+#					gameOn = game_board.checkWin(player)
+#					if(is_valid_move):
+#						changePlayer = True
+#						print("valid")
+#					else: 
+#						changePlayer = False
+#						print("invalid, try again")
+				
 			if changePlayer == True:
 				player = (player+1)%2
 				changePlayer = False
@@ -86,7 +98,7 @@ def main():
 			game_board.makeCanvasWinner("AI Wins")
 			printWin = False
 
-	'''	
+	
 	'''
 		#white 1
 		if player == 0:

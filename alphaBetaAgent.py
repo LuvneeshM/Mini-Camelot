@@ -6,10 +6,23 @@ import math
 
 class AlphaBetaAgent:
 
+	def __init__(self):
+		self.depth = 0
+		self.nodes = 0
+		self.prune_in_max = 0
+		self.prune_in_min = 0
+
 
 	def alphaBetaSearch(self, board):
-		alpha = [float("inf")]
-		beta = [float("-inf")]
+
+		self.depth = 0
+		self.nodes = 0
+		self.prune_in_max = 0
+		self.prune_in_min = 0
+
+
+		alpha = [float("-inf")]
+		beta = [float("inf")]
 
 		tree = Tree()
 		rootNode = tree.root
@@ -18,10 +31,20 @@ class AlphaBetaAgent:
 		self.start_time = time.time()
 		print("s-time",self.start_time)
 		v = self.maxValue(rootNode, alpha, beta)
-
+		print("elapsed-time",time.time()-self.start_time)
 		print("I am done")
 		#return action in ACTIONS(state) with value v
 		print("rootNode.child_array",len(rootNode.child_array))
+		print("move", rootNode.child_array[0].my_move)
+		print("MAYBE RIGHT Depth", self.depth)
+		print("Nodes", self.nodes)
+		print("prune_in_min", self.prune_in_min)
+		print("prune_in_max", self.prune_in_max)
+		print("alpha", alpha)
+		print("beta", beta)
+
+		#fix this
+		return rootNode.child_array[0].my_move
 
 	def maxValue(self, node, alpha, beta):
 		if self.terminalState(node, "black"):
@@ -41,8 +64,11 @@ class AlphaBetaAgent:
 		for piece in node.board.black_pieces:
 			if piece in moves.keys():
 				for move_to in moves[piece]:
-					v = max(v, self.minValue(self.applyAction(node,piece,move_to, "black"), alpha, beta) )
+					if (time.time() - self.start_time <= 10):
+						v = max(v, self.minValue(self.applyAction(node,piece,move_to, "black"), alpha, beta) )
 					if v >= beta[0]:
+						#pruning
+						self.prune_in_max += 1
 						return v
 					alpha[0] = max(alpha[0],v)
 		if v == float("-inf"):
@@ -66,8 +92,10 @@ class AlphaBetaAgent:
 		for piece in node.board.white_pieces:
 			if piece in moves.keys():
 				for move_to in moves[piece]:
-					v = min(v, self.maxValue(self.applyAction(node,piece,move_to, "white"), alpha, beta) )
+					if (time.time() - self.start_time <= 10):
+						v = min(v, self.maxValue(self.applyAction(node,piece,move_to, "white"), alpha, beta) )
 					if v <= alpha[0]:
+						self.prune_in_min += 1
 						return v
 					beta[0] = min(beta[0],v)
 		if v == float("-inf"):
@@ -80,7 +108,7 @@ class AlphaBetaAgent:
 		#check if time is up 
 		#then force this to be a terminal node
 		if time.time() - self.start_time >= 10:
-			print("over 10")
+			print("over 10", player)
 			return True
 		
 		'''
@@ -91,9 +119,10 @@ class AlphaBetaAgent:
 		'''
 		did_i_win = node.board.checkWin(player)
 		if did_i_win != 3: #and did_i_win != 0:
-			print("How you won: ", node.board.checkWin(player))
-			print("the boardn",node.board.printBoard())
-			print(player," won")
+			#print("How you won: ", did_i_win)
+			#print("the board terminal")
+			#node.parent.board.printBoard()
+			#print(player," won")
 			return True
 
 		return False
@@ -103,17 +132,22 @@ class AlphaBetaAgent:
 		pieces_left = len(node.board.white_pieces) - len(node.board.black_pieces)
 		if player == "black":
 			pieces_left *= -1
-
+		if self.depth < node.depth:
+			self.depth = node.depth
+		
 		return pieces_left
 
 	def applyAction(self, node, piece, move_to, player):
+		self.nodes += 1
 		#make clone
 		temp_node = node.clone()
 		temp_node.depth += 1 
+		#this is my_move
+		temp_node.my_move = (piece,move_to)
 		#make move
-		temp_node.board.makeMove(player, piece, move_to)
+		temp_node.board.makeMove(player, piece, move_to, False)
 		#add to node children
-		#print("applyAction")
 		node.child_array.append(temp_node)
-
+		#tell my child, I am the MAN
+		temp_node.parent = node
 		return temp_node

@@ -75,7 +75,7 @@ class Board:
 		deep_tmp.board = copy.deepcopy(self.board)
 		deep_tmp.white_pieces = copy.deepcopy(self.white_pieces)
 		deep_tmp.black_pieces = copy.deepcopy(self.black_pieces)
-		deep_tmp.all_buttons = (self.all_buttons)
+		#deep_tmp.all_buttons = (self.all_buttons)
 		deep_tmp.unplayable_block = copy.deepcopy(self.unplayable_block)
 		deep_tmp.white_castle = copy.deepcopy(self.white_castle)
 		deep_tmp.black_castle = copy.deepcopy(self.black_castle)
@@ -270,16 +270,11 @@ class Board:
 	# FOR GRAPHICS: 
 	# 	updateButtons: just changes the color of buttons cause logic is handled in backend :D
 	# ####################################################################################################################################
-	def makeMove(self, player, piece, move):
+	def makeMove(self, player, piece, move,should_i_graphic):
 		goodMove = False
 
 		validate_move = self.checkMove(player, piece, move)
 		if validate_move != 0:
-			#print("Board Before\n",self.board)
-			#print("White Before\n", self.white_pieces)
-			#print("Black Before\n", self.black_pieces)
-
-			#print("make_move MOVE MADE", validate_move)
 			#if capture move made, figure out the captured move
 			piece_to_remove = None
 			if (validate_move == 1):
@@ -296,6 +291,8 @@ class Board:
 				self.white_pieces[move] = self.white_pieces.pop(piece)
 				#update board
 				self.board[piece[0],piece[1]] = 0
+				if piece in self.white_castle:
+					self.board[piece[0],piece[1]] = 4
 				self.board[move[0], move[1]] = 1
 			else:
 				if(piece_to_remove != None):
@@ -304,9 +301,12 @@ class Board:
 				self.black_pieces[move] = self.black_pieces.pop(piece)
 				#update board
 				self.board[piece[0],piece[1]] = 0
+				if piece in self.black_castle:
+					self.board[piece[0],piece[1]] = 5
 				self.board[move[0], move[1]] = 2
 
-			self.updateButtons(player, piece_to_remove, piece, move)
+			if should_i_graphic == True:
+				self.updateButtons(player, piece_to_remove, piece, move)
 
 			#print("Board After\n",self.board)
 			#print("White After\n", self.white_pieces)
@@ -314,8 +314,9 @@ class Board:
 
 			goodMove = True
 		else: 
-			self.all_buttons[piece].configure(bg=self.two_part_color[0])
-			self.all_buttons[move].configure(bg=self.two_part_color[1])
+			if should_i_graphic == True:
+				self.all_buttons[piece].configure(bg=self.two_part_color[0])
+				self.all_buttons[move].configure(bg=self.two_part_color[1])
 			
 			#temp_color = self.white_color if player =="white" else self.black_color
 			#self.all_buttons[piece].configure(bg=temp_color)
@@ -359,6 +360,10 @@ class Board:
 		temp_color = self.white_color if player =="white" else self.black_color
 		 #self.all_buttons[old_piece_place].cget("bg")
 		self.all_buttons[old_piece_place].configure(bg="LightBlue")
+		if old_piece_place in self.white_castle:
+			self.all_buttons[old_piece_place].configure(bg="Green")
+		elif old_piece_place in self.black_castle:
+			self.all_buttons[old_piece_place].configure(bg="Green")
 		self.all_buttons[new_piece_place].configure(bg=str(temp_color))
 
 	#will check to see if move is valid
