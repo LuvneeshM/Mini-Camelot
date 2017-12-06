@@ -5,7 +5,7 @@ from board import Board
 class State:
 	def __init__(self):
 		#copy of the  game_board
-		self.list_of_possible_moves = self.board.possible_moves_to_make
+		#self.list_of_possible_moves = self.board.possible_moves_to_make
 		self.move_to_make_board = None
 
 class Node:

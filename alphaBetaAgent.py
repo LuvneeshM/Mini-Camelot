@@ -37,18 +37,20 @@ class AlphaBetaAgent:
 
 		v = self.maxValue(rootNode, alpha, beta, player)
 
-		print(v)
 
-		print("elapsed-time",time.time()-self.start_time)
 		print("I am done")
-		print("MAYBE RIGHT Depth", self.depth)
-		print("Nodes", self.nodes)
+		print("elapsed-time",time.time()-self.start_time)
+		print("MAX Depth", self.max_depth)
+		print("Nodes Generated:", self.nodes)
 		print("prune_in_min", self.prune_in_min)
 		print("prune_in_max", self.prune_in_max)
 		print("alpha", alpha)
 		print("beta", beta)
 		print("V", v)
+
 		#return action in ACTIONS(state) with value v
+		print("my v", rootNode.v)
+		print("child length", len(rootNode.child_array))
 		for k in rootNode.child_array:
 			print("move", k.my_move)
 			input(k.v)
@@ -76,7 +78,6 @@ class AlphaBetaAgent:
 		#piece will be the key
 		#move_to will be the peice to move to
 		if player == "black":
-			counter = 0
 			for piece in node.board.black_pieces:
 				if piece in moves.keys():
 					for move_to in moves[piece]:
@@ -84,8 +85,8 @@ class AlphaBetaAgent:
 						v = max(v, self.minValue(self.applyAction(node,piece,move_to, "white"), alpha, beta,"white" ))
 
 						node.v = v
-
-						if v >= beta[0]:
+						
+						if v > beta[0]:
 							#pruning
 							self.prune_in_max += 1
 							return v
@@ -93,6 +94,8 @@ class AlphaBetaAgent:
 			if v == float("-inf"):
 				print("We fked up maxValue")
 				raise
+		#for ai vs ai
+		'''
 		if player == "white":
 			for piece in node.board.white_pieces:
 				if piece in moves.keys():
@@ -102,7 +105,7 @@ class AlphaBetaAgent:
 						
 						node.v = v
 
-						if v >= beta[0]:
+						if v > beta[0]:
 							#pruning
 							self.prune_in_max += 1
 							return v
@@ -110,6 +113,7 @@ class AlphaBetaAgent:
 			if v == float("-inf"):
 				print("We fked up maxValue")
 				raise
+		'''
 		return v					
 	
 	def minValue(self, node, alpha, beta, player):
@@ -132,14 +136,17 @@ class AlphaBetaAgent:
 						v = min(v, self.maxValue(self.applyAction(node,piece,move_to, "black"), alpha, beta, "black" ))
 						
 						node.v = v
-
-						if v <= alpha[0]:
+						if (node.depth == 1):
+							print("Depth 1: node move inside",node.my_move)
+						if v < alpha[0]:
 							self.prune_in_min += 1
 							return v
 						beta[0] = min(beta[0],v)
 			if v == float("-inf"):
 				print("We fked up minValue")
 				raise
+		#for ai vs ai
+		'''
 		if player == "black":
 			for piece in node.board.black_pieces:
 				if piece in moves.keys():
@@ -149,13 +156,16 @@ class AlphaBetaAgent:
 						
 						node.v = v
 
-						if v <= alpha[0]:
+						if v < alpha[0]:
 							self.prune_in_min += 1
 							return v
 						beta[0] = min(beta[0],v)
 			if v == float("-inf") or v == float("inf"):
 				print("We fked up minValue")
 				raise
+		'''
+		if (node.depth == 1):
+			print("Depth 1: node move",node.my_move)
 		return v					
 
 	#terminalState function
@@ -163,10 +173,8 @@ class AlphaBetaAgent:
 		#check if time is up 
 		#then force this to be a terminal node
 		if time.time() - self.start_time >= 10:
-			print("over 10", player)
+		#	print("over 10", player)
 			return True
-		
-		
 
 		#max depth
 		if node.depth == self.max_depth:
@@ -180,11 +188,7 @@ class AlphaBetaAgent:
 		Continue = 3
 		'''
 		did_i_win = node.board.checkWin(player)
-		if did_i_win != 3: #and did_i_win != 0:
-			#print("How you won: ", did_i_win)
-			#print("the board terminal")
-			#node.parent.board.printBoard()
-			#input(player)
+		if did_i_win != 3: 
 			return True
 
 		return False
@@ -227,6 +231,7 @@ class AlphaBetaAgent:
 		self.nodes += 1
 		#make clone
 		temp_node = node.clone()
+		#more depth
 		temp_node.depth += 1 
 		#this is my_move
 		temp_node.my_move = (piece,move_to)
@@ -239,6 +244,8 @@ class AlphaBetaAgent:
 			temp_node.board.makeMove("white", piece, move_to, False)
 		#add to node children
 		node.child_array.append(temp_node)
+		if node.depth == 0:
+			print("applyAction",temp_node.my_move)
 		#tell my child, I am the MAN
 		temp_node.parent = node
 		return temp_node
