@@ -52,8 +52,8 @@ class AlphaBetaAgent:
 		print("my v", rootNode.v)
 		print("child length", len(rootNode.child_array))
 		for k in rootNode.child_array:
-			print("move", k.my_move)
-			input(k.v)
+			#print("move", k.my_move)
+			#input(k.v)
 			if k.v == v:
 				return k.my_move
 
@@ -94,8 +94,9 @@ class AlphaBetaAgent:
 			if v == float("-inf"):
 				print("We fked up maxValue")
 				raise
+		
+
 		#for ai vs ai
-		'''
 		if player == "white":
 			for piece in node.board.white_pieces:
 				if piece in moves.keys():
@@ -113,11 +114,13 @@ class AlphaBetaAgent:
 			if v == float("-inf"):
 				print("We fked up maxValue")
 				raise
-		'''
+		
 		return v					
 	
 	def minValue(self, node, alpha, beta, player):
 		if self.terminalState(node, player):
+			#if node.depth == 1:
+			#	print("check util")
 			return self.utility(node,player)
 
 		v = float("inf")
@@ -136,8 +139,8 @@ class AlphaBetaAgent:
 						v = min(v, self.maxValue(self.applyAction(node,piece,move_to, "black"), alpha, beta, "black" ))
 						
 						node.v = v
-						if (node.depth == 1):
-							print("Depth 1: node move inside",node.my_move)
+						#if (node.depth == 1):
+						#	print("Depth Min 1: node move inside",node.my_move)
 						if v < alpha[0]:
 							self.prune_in_min += 1
 							return v
@@ -165,7 +168,7 @@ class AlphaBetaAgent:
 				raise
 		'''
 		if (node.depth == 1):
-			print("Depth 1: node move",node.my_move)
+			print("Depth Min 1: node move",node.my_move)
 		return v					
 
 	#terminalState function
@@ -173,7 +176,9 @@ class AlphaBetaAgent:
 		#check if time is up 
 		#then force this to be a terminal node
 		if time.time() - self.start_time >= 10:
-		#	print("over 10", player)
+			#print("over 10", player)
+			#if (node.depth == 1):
+			#	print("terminal node",node.my_move)
 			return True
 
 		#max depth
@@ -212,6 +217,10 @@ class AlphaBetaAgent:
 				opp_to_my_castle += ((4.0 - float(j[0]))**2 + (float(j[1]))**2 )**0.5
 			val_opp = INF/(opp_to_my_castle * 100 * len(node.board.black_pieces))
 
+			#if (node.depth == 1):
+			#	print("utility node", node.my_move)
+			node.v = (val_me+val_opp)
+
 			return val_me + val_opp
 
 		if(player == "black"):
@@ -223,6 +232,11 @@ class AlphaBetaAgent:
 			for j in node.board.white_pieces:
 				opp_to_my_castle += ((4.0 - float(j[0]))**2 + (8-float(j[1]))**2 )**0.5
 			val_opp = INF/(opp_to_my_castle * 100 * len(node.board.white_pieces))
+
+
+			#if (node.depth == 1):
+			#	print("utility node", node.my_move)
+			node.v = (val_me+val_opp)
 
 			return val_me + val_opp
 			
@@ -244,8 +258,8 @@ class AlphaBetaAgent:
 			temp_node.board.makeMove("white", piece, move_to, False)
 		#add to node children
 		node.child_array.append(temp_node)
-		if node.depth == 0:
-			print("applyAction",temp_node.my_move)
+		#if node.depth == 0:
+		#	print("applyAction",temp_node.my_move)
 		#tell my child, I am the MAN
 		temp_node.parent = node
 		return temp_node
