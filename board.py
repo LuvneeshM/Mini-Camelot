@@ -346,12 +346,12 @@ class Board:
 		#white wins
 		if (len(set(self.white_pieces.keys()).intersection(self.black_castle)) == 2):
 			return 1
-		elif(white_count > 1 and black_count == 1):
+		elif(white_count > 1 and black_count == 0):
 			return 1
 		#black wins
 		elif (len(set(self.black_pieces.keys()).intersection(self.white_castle)) == 2):
 			return 2
-		elif(white_count == 1 and black_count > 1):
+		elif(white_count == 0 and black_count > 1):
 			return 2
 		return 3
 

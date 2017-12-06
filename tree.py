@@ -20,16 +20,18 @@ class Node:
 		self.parent = None
 		#depth of that node
 		self.depth = 0
+		#what am i
+		self.player = None
+		#my v
+		self.v = None
 
 	def clone(self):
 		temp_deep = Node()
 
 		temp_deep.board = self.board.clone()
-		temp_deep.child_array = copy.deepcopy(self.child_array)
-		temp_deep.my_move = copy.deepcopy(self.my_move)
 		temp_deep.parent = self.parent
 		temp_deep.depth = self.depth
-
+		temp_deep.player = self.player
 		return temp_deep
 
 class Tree:
