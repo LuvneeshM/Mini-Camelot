@@ -1,6 +1,6 @@
 from board import Board
 from alphaBetaAgent import AlphaBetaAgent
-
+import time
 
 def humansFight(game_board, player, gameOn, printName, printWin, changePlayer):
 	while True:
@@ -76,7 +76,9 @@ def humanAIFight(game_board, player, gameOn, printName, printWin, changePlayer):
 			#white 0
 			if player == 0:
 				if printName:
+					print("##############################")		
 					print("player 1")
+					print("##############################")
 					printName = False
 					
 				if(len(game_board.two_part_move) == 2):
@@ -91,12 +93,24 @@ def humanAIFight(game_board, player, gameOn, printName, printWin, changePlayer):
 						print("invalid, try again")
 			elif player == 1:
 				if printName:
+					print("##############################")
 					print("player 2")
 					printName = False
 				aB_board = game_board.clone()
-				aB_agent_move = aB_agent.alphaBetaSearch(aB_board, "black")
-				print("aB move", aB_agent_move)
-				is_valid_move = game_board.makeMove("black", aB_agent_move[0], aB_agent_move[1], True)
+				
+				depth = 1
+				aB_agent_move = None
+				start_time = time.time()
+				print("# Start Time:", start_time)
+				while(time.time() - start_time <= 10):
+					print("\n##### Depth", depth, "#####")
+					temp_move = aB_agent.alphaBetaSearch(aB_board, "black", depth, time.time())
+					depth +=1
+					if (aB_agent_move == None or temp_move[1] > aB_agent_move[1]):
+						aB_agent_move = temp_move
+				print("My Official Move is:",aB_agent_move)
+				
+				is_valid_move = game_board.makeMove("black", aB_agent_move[0][0], aB_agent_move[0][1], True)
 				gameOn = game_board.checkWin(player)
 				if(is_valid_move):
 					changePlayer = True
@@ -126,8 +140,8 @@ def AIAIFight(game_board, player, gameOn, printName, printWin, changePlayer):
 	aB_agent = AlphaBetaAgent()
 	aB_board = game_board.clone()
 	
-	aB_agent_t = AlphaBetaAgent()
-	aB_board_t = game_board.clone()
+	aB_agent_w = AlphaBetaAgent()
+	aB_board_w = game_board.clone()
 
 	while True:
 		
@@ -138,12 +152,24 @@ def AIAIFight(game_board, player, gameOn, printName, printWin, changePlayer):
 			#white
 			if player == 0:
 				if printName:
-					print("player 2")
+					print("##############################")					
+					print("player 1")
 					printName = False
-				aB_board_t = game_board.clone()
-				aB_agent_move = aB_agent_t.alphaBetaSearch(aB_board_t, "white")
-				print("aB move", aB_agent_move)
-				is_valid_move = game_board.makeMove("white", aB_agent_move[0], aB_agent_move[1], True)
+				aB_board_w = game_board.clone()
+				
+				depth = 1
+				aB_agent_move = None
+				start_time = time.time()
+				print("# Start Time:", start_time)
+				while(time.time() - start_time <= 10):
+					print("\n##### Depth", depth, "#####")
+					temp_move = aB_agent_w.alphaBetaSearch(aB_board_w, "white", depth, time.time())
+					depth +=1
+					if (aB_agent_move == None or temp_move[1] > aB_agent_move[1]):
+						aB_agent_move = temp_move
+				print("My Official Move is:",aB_agent_move)
+				
+				is_valid_move = game_board.makeMove("white", aB_agent_move[0][0], aB_agent_move[0][1], True)
 				gameOn = game_board.checkWin(player)
 				if(is_valid_move):
 					changePlayer = True
@@ -153,12 +179,24 @@ def AIAIFight(game_board, player, gameOn, printName, printWin, changePlayer):
 			#black
 			elif player == 1:
 				if printName:
+					print("##############################")		
 					print("player 2")
 					printName = False
 				aB_board = game_board.clone()
-				aB_agent_move = aB_agent.alphaBetaSearch(aB_board, "black")
-				print("aB move", aB_agent_move)
-				is_valid_move = game_board.makeMove("black", aB_agent_move[0], aB_agent_move[1], True)
+				
+				depth = 1
+				aB_agent_move = None
+				start_time = time.time()
+				print("# Start Time:", start_time)
+				while(time.time() - start_time <= 10):
+					print("\n##### Depth", depth, "#####")
+					temp_move = aB_agent.alphaBetaSearch(aB_board, "black", depth, time.time())
+					depth +=1
+					if (aB_agent_move == None or temp_move[1] > aB_agent_move[1]):
+						aB_agent_move = temp_move
+				print("My Official Move is:",aB_agent_move)
+
+				is_valid_move = game_board.makeMove("black", aB_agent_move[0][0], aB_agent_move[0][1], True)
 				gameOn = game_board.checkWin(player)
 				if(is_valid_move):
 					changePlayer = True
@@ -188,11 +226,20 @@ def AIAIFight(game_board, player, gameOn, printName, printWin, changePlayer):
 def main():
 	game_board = Board()
 
+	#go first go 2nd?
+	go_first = None
+	game_board.shouldIGoFirst()
+	while go_first == None:
+		game_board.start_gui.update_idletasks()
+		game_board.start_gui.update()
+
+		go_first = game_board.playerPicked()
+		
 	game_board.visual()
 
 	game_board.printBoard()
 
-	player = 0
+	player = go_first
 
 	changePlayer = False
 
@@ -210,25 +257,6 @@ def main():
 	humanAIFight(game_board, player, gameOn, printName, printWin, changePlayer)
 	#AIAIFight(game_board, player, gameOn, printName, printWin, changePlayer)
 
-	
-	
-	'''
-		#white 1
-		if player == 0:
-			print("player_1")
-			piece = tuple(int(x.strip()) for x in input("pick piece ").split(','))
-			move = tuple(int(x.strip()) for x in input("make move ").split(','))
-			while(game_board.makeMove("white", piece, move) == False):
-				piece = tuple(int(x.strip()) for x in input("pick piece ").split(','))
-				move = tuple(int(x.strip()) for x in input("make move ").split(','))
-		elif player == 1:
-			print("player_2")
-			piece = tuple(int(x.strip()) for x in input("pick piece ").split(','))
-			move = tuple(int(x.strip()) for x in input("make move ").split(','))
-			while(game_board.makeMove("black", piece, move) == False):
-				piece = tuple(int(x.strip()) for x in input("pick piece ").split(','))
-				move = tuple(int(x.strip()) for x in input("make move ").split(','))
-		player = (player+1)%2
-	'''
+
 if __name__ == '__main__':
 	main()

@@ -2,6 +2,7 @@ import numpy as np
 import copy
 import tkinter as tk
 from tkinter import *
+import random
 
 class Board:
 
@@ -140,7 +141,101 @@ class Board:
 				if self.board[row][col] == 0:
 					moves_list.append((row,col))
 		return moves_list
-	#used to show board on terminal
+
+	def isCastleOccupide(self, player):
+		if(player == "white"):
+			if (len(set(self.white_pieces.keys()).intersection(self.black_castle)) > 0):
+				return True
+		if(player =="black"):
+			if (len(set(self.black_pieces.keys()).intersection(self.white_castle)) > 2):
+				return True
+
+		return False
+
+	def distance(self, tuple_1, tuple_2):
+		d_x = tuple_1[0] - tuple_2[0]
+		d_y = tuple_1[1] - tuple_2[1]
+
+		d = (d_x**2 + d_y**2)**0.5
+		return d
+
+	def averageDistToOppCastle(self, player):
+		dist = 0
+		if (player == "white"):
+			for p in self.white_pieces:
+				d = None
+				if p[0] <= 4:
+					d = self.distance(self.black_castle[0], p)
+				else:
+					d = self.distance(self.black_castle[1], p)
+				dist += d
+			return dist/len(self.white_pieces)
+		elif(player == "black"):
+			for p in self.black_pieces:
+				d = None
+				if p[0] <= 4:
+					d = self.distance(self.white_castle[0], p)
+				else:
+					d = self.distance(self.white_castle[1], p)
+				dist += d
+			return dist/len(self.black_pieces)
+
+	def minDistToOppCastle(self,player):
+		dist = 1000
+
+		if (player == "white"):
+			for p in self.white_pieces:
+				d = None
+				if p[0] <= 4:
+					d = self.distance(self.black_castle[0], p)
+				else:
+					d = self.distance(self.black_castle[1], p)
+				
+				if (d < dist):
+					dist = d
+		
+		elif (player == "black"):
+			for p in self.black_pieces:
+				d = None
+				if p[0] <= 4:
+					d = self.distance(self.white_castle[0], p)
+				else:
+					d = self.distance(self.white_castle[1], p)
+
+				if (d < dist):
+					dist = d
+		return dist
+
+	#how close to opponent am I
+	def minDistToOpp(self, player, maxPlayer):
+		dist = 1000
+		for p_b in self.black_pieces:
+			for p_w in self.white_pieces:
+				d = self.distance(p_b, p_w)
+			if (d < dist):
+				dist = d
+		if (maxPlayer == "black"):
+			#if white is close
+			if (player == "white" and dist < 2):
+				return -1 * random.uniform(400.0,500.0)
+			elif (player == "white"):
+				return dist * -50
+			#
+			if (player == "black" and dist < 3):
+				return random.uniform(400.0,500.0)
+			elif (player == "black"):
+				return dist * 50
+		elif (maxPlayer == "white"):
+			if (player == "black" and dist < 2):
+				return -1 * random.uniform(400.0,500.0)
+			elif (player == "black"):
+				return dist * -50
+			if (player == "white" and dist < 3):
+				return random.uniform(400.0,500.0)
+			elif (player == "white"):
+				return dist * 50
+		
+	#to_string
 	def printBoard(self):
 		print(self.board)
 
@@ -171,6 +266,10 @@ class Board:
 
 		return (row, col)
 	
+	def pickPlayer(self, which_turn):
+		self.player_picked = which_turn
+		self.start_gui.destroy()
+
 	def uiMakeCanvas(self, canvas, color, sq_size):
 		for row in range(self.rows):
 			for col in range(self.cols):
@@ -213,6 +312,32 @@ class Board:
 		canvas.itemconfig(instruct_id, text="Please close the game!")
 
 		canvas.pack()
+
+	def shouldIGoFirst(self):
+		self.player_picked = None
+
+		h = 500
+		w = 300
+
+		self.start_gui = tk.Tk()
+		canvas = tk.Canvas(self.start_gui, width=w, height=h, background="White")
+
+		button_first = tk.Button(text="%s" % ("First"), bg="LightGray", fg="Black")
+		button_first.configure(width=100, height=50, activebackground="#33B5E5")
+		button_first.configure(command=lambda which_turn=0: self.pickPlayer(which_turn))
+		button_window = canvas.create_window(150,150,width=100, height=50, window=button_first)
+		
+
+		button_second = tk.Button(text="%s" % ("Second"), bg="LightGray", fg="Black")
+		button_second.configure(width=100, height=50, activebackground="#33B5E5")
+		button_second.configure(command=lambda which_turn=1: self.pickPlayer(which_turn))
+		button_window = canvas.create_window(150, 210,width=100, height=50, window=button_second)
+
+		canvas.pack()
+
+	def playerPicked(self):
+		return self.player_picked
+
 
 	# ####################################################################################################################################
 	# Set up the board
