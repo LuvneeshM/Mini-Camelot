@@ -60,13 +60,10 @@ def humansFight(game_board, player, gameOn, printName, printWin, changePlayer):
 				game_board.makeCanvasWinner("AI Wins")
 				printWin = False
 
-def humanAIFight(game_board, player, gameOn, printName, printWin, changePlayer):
+def humanAIFight(game_board, player, gameOn, printName, printWin, changePlayer, level):
 	#one shot
 	aB_agent = AlphaBetaAgent()
 	aB_board = game_board.clone()
-	#aB_agent_move = aB_agent.alphaBetaSearch(aB_board)
-	#print("I AM FREE")
-	#print (aB_agent_move)
 	while True:
 		
 		game_board.main_gui.update_idletasks()
@@ -80,7 +77,8 @@ def humanAIFight(game_board, player, gameOn, printName, printWin, changePlayer):
 					print("player 1")
 					print("##############################")
 					printName = False
-					
+				
+				#Human plays the game
 				if(len(game_board.two_part_move) == 2):
 					piece = game_board.two_part_move[0]
 					move = game_board.two_part_move[1]
@@ -98,13 +96,16 @@ def humanAIFight(game_board, player, gameOn, printName, printWin, changePlayer):
 					printName = False
 				aB_board = game_board.clone()
 				
+				#Ai plays the game
 				depth = 1
 				aB_agent_move = None
+				#your time starts now
 				start_time = time.time()
 				print("# Start Time:", start_time)
+				#while there still is time
 				while(time.time() - start_time <= 10):
 					print("\n##### Depth", depth, "#####")
-					temp_move = aB_agent.alphaBetaSearch(aB_board, "black", depth, time.time())
+					temp_move = aB_agent.alphaBetaSearch(aB_board, "black", depth, time.time(), level)
 					depth +=1
 					if (aB_agent_move == None or temp_move[1] > aB_agent_move[1]):
 						aB_agent_move = temp_move
@@ -135,7 +136,7 @@ def humanAIFight(game_board, player, gameOn, printName, printWin, changePlayer):
 			game_board.makeCanvasWinner("AI Wins")
 			printWin = False	
 
-def AIAIFight(game_board, player, gameOn, printName, printWin, changePlayer):
+def AIAIFight(game_board, player, gameOn, printName, printWin, changePlayer, level):
 	#one shot
 	aB_agent = AlphaBetaAgent()
 	aB_board = game_board.clone()
@@ -163,7 +164,7 @@ def AIAIFight(game_board, player, gameOn, printName, printWin, changePlayer):
 				print("# Start Time:", start_time)
 				while(time.time() - start_time <= 10):
 					print("\n##### Depth", depth, "#####")
-					temp_move = aB_agent_w.alphaBetaSearch(aB_board_w, "white", depth, time.time())
+					temp_move = aB_agent_w.alphaBetaSearch(aB_board_w, "white", depth, time.time(), level)
 					depth +=1
 					if (aB_agent_move == None or temp_move[1] > aB_agent_move[1]):
 						aB_agent_move = temp_move
@@ -190,7 +191,7 @@ def AIAIFight(game_board, player, gameOn, printName, printWin, changePlayer):
 				print("# Start Time:", start_time)
 				while(time.time() - start_time <= 10):
 					print("\n##### Depth", depth, "#####")
-					temp_move = aB_agent.alphaBetaSearch(aB_board, "black", depth, time.time())
+					temp_move = aB_agent.alphaBetaSearch(aB_board, "black", depth, time.time(), level)
 					depth +=1
 					if (aB_agent_move == None or temp_move[1] > aB_agent_move[1]):
 						aB_agent_move = temp_move
@@ -234,10 +235,17 @@ def main():
 		game_board.start_gui.update()
 
 		go_first = game_board.playerPicked()
+
+	#which level
+	level = None
+	game_board.levelSelection()
+	while level == None:
+		game_board.level_gui.update_idletasks()
+		game_board.level_gui.update()
+
+		level = game_board.levelPicked()
 		
 	game_board.visual()
-
-	game_board.printBoard()
 
 	player = go_first
 
@@ -253,9 +261,13 @@ def main():
 	'''
 	gameOn = 3
 
+	#3 different kind of game modes 
+	#2 player
+	#Player vs AI
+	#AI vs AI
 	#humansFight(game_board, player, gameOn, printName, printWin, changePlayer)
-	humanAIFight(game_board, player, gameOn, printName, printWin, changePlayer)
-	#AIAIFight(game_board, player, gameOn, printName, printWin, changePlayer)
+	humanAIFight(game_board, player, gameOn, printName, printWin, changePlayer, level)
+	#AIAIFight(game_board, player, gameOn, printName, printWin, changePlayer, level)
 
 
 if __name__ == '__main__':

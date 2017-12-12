@@ -71,6 +71,8 @@ class Board:
 	# ####################################################################################################################################
 	#for ai stuff eventually
 	# ####################################################################################################################################
+
+	#sort of like a copy constructor
 	def clone(self):
 		deep_tmp = Board()
 		deep_tmp.board = copy.deepcopy(self.board)
@@ -85,6 +87,7 @@ class Board:
 
 		return deep_tmp
 
+	#dictionary of moves ai can make
 	def getDictOfAllMoves(self, player):
 		#dictionary key = piece from black pieces
 		#dictionary values = all the possible locations that piece can legally move to
@@ -131,6 +134,7 @@ class Board:
 
 		return move_dict
 
+	#list os normal moves
 	def createListOfNormalMoves(self, player, piece):
 		moves_list = []
 		for row in range(piece[0]-1,piece[0]+2):
@@ -142,6 +146,7 @@ class Board:
 					moves_list.append((row,col))
 		return moves_list
 
+	#check to see if at least 1 castle is occupied
 	def isCastleOccupide(self, player):
 		if(player == "white"):
 			if (len(set(self.white_pieces.keys()).intersection(self.black_castle)) > 0):
@@ -152,6 +157,7 @@ class Board:
 
 		return False
 
+	#standard distnace function between 2 pieces
 	def distance(self, tuple_1, tuple_2):
 		d_x = tuple_1[0] - tuple_2[0]
 		d_y = tuple_1[1] - tuple_2[1]
@@ -159,6 +165,7 @@ class Board:
 		d = (d_x**2 + d_y**2)**0.5
 		return d
 
+	#average of how close player is to the opponent castle
 	def averageDistToOppCastle(self, player):
 		dist = 0
 		if (player == "white"):
@@ -180,6 +187,7 @@ class Board:
 				dist += d
 			return dist/len(self.black_pieces)
 
+	#how close am I to castle
 	def minDistToOppCastle(self,player):
 		dist = 1000
 
@@ -207,31 +215,35 @@ class Board:
 		return dist
 
 	#how close to opponent am I
+	#utility added into function
+	#heavily favors avoiding the opponent unless it tries to go for an offensive trap
 	def minDistToOpp(self, player, maxPlayer):
 		dist = 1000
 		for p_b in self.black_pieces:
 			for p_w in self.white_pieces:
 				d = self.distance(p_b, p_w)
-			if (d < dist):
-				dist = d
+				if (d < dist):
+					dist = d
 		if (maxPlayer == "black"):
 			#if white is close
-			if (player == "white" and dist < 2):
-				return -1 * random.uniform(400.0,500.0)
+			if (player == "white" and dist < 2.7):
+				return -1 * random.uniform(400.0,450.0)
 			elif (player == "white"):
 				return dist * -50
-			#
-			if (player == "black" and dist < 3):
-				return random.uniform(400.0,500.0)
+			#get closer to set up attack
+			if (player == "black" and dist > 1.5 and dist < 4.0):
+				return random.uniform(400.0,450.0)
 			elif (player == "black"):
 				return dist * 50
 		elif (maxPlayer == "white"):
-			if (player == "black" and dist < 2):
-				return -1 * random.uniform(400.0,500.0)
+			#too close to black
+			if (player == "black" and dist < 2.7):
+				return -1 * random.uniform(400.0,450.0)
 			elif (player == "black"):
 				return dist * -50
-			if (player == "white" and dist < 3):
-				return random.uniform(400.0,500.0)
+			#get closer to set up attack
+			if (player == "white" and dist > 1.5 and dist < 4.0):
+				return random.uniform(400.0,450.0)
 			elif (player == "white"):
 				return dist * 50
 		
@@ -269,6 +281,10 @@ class Board:
 	def pickPlayer(self, which_turn):
 		self.player_picked = which_turn
 		self.start_gui.destroy()
+
+	def pickLevel(self, which_level):
+		self.level_picked = which_level
+		self.level_gui.destroy()
 
 	def uiMakeCanvas(self, canvas, color, sq_size):
 		for row in range(self.rows):
@@ -335,9 +351,40 @@ class Board:
 
 		canvas.pack()
 
+	def levelSelection(self):
+		self.level_picked = None
+
+		h = 500 
+		w = 300
+
+		self.level_gui = tk.Tk()
+		canvas = tk.Canvas(self.level_gui, width=w, height=h, background="White")
+
+		instruct_id = canvas.create_text(150, 100, anchor="c",font=("Purisa", 20))
+		canvas.itemconfig(instruct_id, text="Select An AI To Fight")
+
+		button_first = tk.Button(text="%s" % ("Initiator"), bg="LightGray", fg="Black")
+		button_first.configure(width=100, height=50, activebackground="#33B5E5")
+		button_first.configure(command=lambda which_level=1: self.pickLevel(which_level))
+		button_window = canvas.create_window(150,150,width=100, height=50, window=button_first)
+		
+		button_second = tk.Button(text="%s" % ("Trapper"), bg="LightGray", fg="Black")
+		button_second.configure(width=100, height=50, activebackground="#33B5E5")
+		button_second.configure(command=lambda which_level=2: self.pickLevel(which_level))
+		button_window = canvas.create_window(150, 210,width=100, height=50, window=button_second)
+
+		button_third = tk.Button(text="%s" % ("Defender"), bg="LightGray", fg="Black")
+		button_third.configure(width=100, height=50, activebackground="#33B5E5")
+		button_third.configure(command=lambda which_level=3: self.pickLevel(which_level))
+		button_window = canvas.create_window(150, 270,width=100, height=50, window=button_third)
+
+		canvas.pack()		
+
 	def playerPicked(self):
 		return self.player_picked
 
+	def levelPicked(self):
+		return self.level_picked
 
 	# ####################################################################################################################################
 	# Set up the board

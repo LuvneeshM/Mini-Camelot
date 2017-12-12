@@ -16,12 +16,13 @@ class AlphaBetaAgent:
 		self.MAX = 1000
 		self.MIN = -1000
 
-	def alphaBetaSearch(self, board, player, max_depth, start_time):
+	def alphaBetaSearch(self, board, player, max_depth, start_time, level):
 
 		self.depth = 0
 		self.nodes = 0
 		self.prune_in_max = 0
 		self.prune_in_min = 0
+		self.level = level
 		self.max_depth = max_depth
 
 		self.max_player = player
@@ -58,15 +59,17 @@ class AlphaBetaAgent:
 			if k.v == v:
 				print("# Move Returning:",k.my_move)
 				return (k.my_move,v)
-				print("##############################")
-
-		raise
-		
+				print("##############################")		
 		
 	def maxValue(self, node, alpha, beta, player):
 		if self.terminalState(node, player):
-			return self.utility3(node, player)
-		
+			if (self.level == 1):
+				return self.utility(node, player)
+			elif (self.level == 2):
+				return self.utility2(node, player, True)
+			else:
+				return self.utility3(node, player, False)
+
 		v = float("-inf")
 
 		#for each action a in Actions(state) do
@@ -74,15 +77,13 @@ class AlphaBetaAgent:
 		#if no capture moves available then pick from other moves
 		if len(moves) == 0:
 			moves = node.board.getDictOfAllMoves(player)
-
-
 		#piece will be the key
 		#move_to will be the peice to move to
 		if player == "black":
 			for piece in node.board.black_pieces:
 				if piece in moves.keys():
 					for move_to in moves[piece]:
-						v = max(v, self.minValue(self.applyAction(node,piece,move_to, "white"), alpha, beta,"black" ))
+						v = max(v, self.minValue(self.applyAction(node,piece,move_to, "white"), alpha, beta,"black"))
 
 						node.v = v
 						
@@ -91,11 +92,7 @@ class AlphaBetaAgent:
 							self.prune_in_max += 1
 							return v
 						alpha[0] = max(alpha[0],v)
-			if v == float("-inf"):
-				print("We fked up maxValue")
-				raise
-		
-
+			
 		#for ai vs ai
 		if player == "white":
 			for piece in node.board.white_pieces:
@@ -110,18 +107,17 @@ class AlphaBetaAgent:
 							self.prune_in_max += 1
 							return v
 						alpha[0] = max(alpha[0],v)
-			if v == float("-inf"):
-				print("We fked up maxValue")
-				raise
-		
+			
 		return v					
 	
 	def minValue(self, node, alpha, beta, player):
 		if self.terminalState(node, player):
-			#print(node.player)
-			#print(player)
-			#input()
-			return self.utility3(node,player)
+			if (self.level == 1):
+				return self.utility(node, player)
+			elif (self.level == 2):
+				return self.utility2(node, player, True)
+			else:
+				return self.utility3(node, player, False)
 
 		v = float("inf")
 		#for each action a in Actions(state) do
@@ -142,11 +138,8 @@ class AlphaBetaAgent:
 							self.prune_in_min += 1
 							return v
 						beta[0] = min(beta[0],v)
-			if v == float("-inf"):
-				print("We fked up minValue")
-				raise
-		#for ai vs ai
-		
+
+		#for ai vs ai		
 		if player == "black":
 			for piece in node.board.black_pieces:
 				if piece in moves.keys():
@@ -159,9 +152,6 @@ class AlphaBetaAgent:
 							self.prune_in_min += 1
 							return v
 						beta[0] = min(beta[0],v)
-			if v == float("-inf") or v == float("inf"):
-				print("We fked up minValue")
-				raise
 		
 		return v					
 
@@ -193,80 +183,69 @@ class AlphaBetaAgent:
 		return False
 
 	#utility function
+	#The initiator
+	#he will decide to break stalemates to enter the war
 	def utility(self, node, player):
 
-		did_i_win = node.board.checkWin(player)
-
-		#when black runs ai
-		#max player is black and wins
-		if did_i_win == 2 and self.max_player == "black":
-			node.v = self.MAX
-			return self.MAX
-		#min player is white and wins
-		elif did_i_win == 1 and self.min_player == "white":
-			node.v = self.MIN
-			return self.MIN
-		#when white runs ai
-		#max player is white and wins
-		elif did_i_win == 1 and self.max_player == "white":
-			node.v = self.MAX
-			return 1000
-		#min player is black and wins
-		elif did_i_win == 2 and self.min_player == "black":
-			node.v = self.MIN
-			return -1000
-		#it is a draw
-		elif did_i_win == 0:
-			node.v = 0
-			return 0
-		#else we hit a cut off so we evaluate that node as a leaf node
-		else:
-			opp_to_my_castle = 1.0
-			me_to_opp_castle = 1.0
-
-			INF = 1000
-
-			total_piece = len(node.board.black_pieces) + len(node.board.white_pieces)
-
-			if (player == "white"):
-				for i in node.board.white_pieces:
-					me_to_opp_castle += ((4.0 - float(i[0]))**2  +(13-float(i[1]))**2 )**0.5 				
-				val_me = len(node.board.white_pieces)*(INF/(me_to_opp_castle*15))
-
-				for j in node.board.black_pieces:
-					opp_to_my_castle += ((4.0 - float(j[0]))**2 + (float(j[1]))**2 )**0.5
-				val_opp = INF/(opp_to_my_castle * 100 * len(node.board.black_pieces))
-
-				node.v = (val_me+val_opp)
-
-				return val_me + val_opp
-
-			if(player == "black"):
-				for i in node.board.black_pieces:
-					me_to_opp_castle += ((4.0 - float(i[0]))**2 + (float(i[1]))**2 )**0.5 
-				
-				val_me = len(node.board.black_pieces)*(INF/(me_to_opp_castle*total_piece))
-
-				for j in node.board.white_pieces:
-					opp_to_my_castle += ((4.0 - float(j[0]))**2 + (8-float(j[1]))**2 )**0.5
-				val_opp = INF/(opp_to_my_castle * 100 * len(node.board.white_pieces))
-
-
-				#if (node.depth == 1):
-				#	print("utility node", node.my_move)
-				node.v = (val_me+val_opp)
-
-				return val_me + val_opp
-		
-
-	#utility 2
-	def utility2(self, node, player):
 		did_i_win = node.board.checkWin(player)
 		based_off_black = 1
 		if(self.max_player == "black"):
 			based_off_black = 1
 		else:
 			based_off_black = -1
+		#when black runs ai
+		#max player is black and wins
+		if did_i_win == 2 and self.max_player == "black":
+			node.v = self.MAX * based_off_black
+			return node.v
+		#min player is white and wins
+		elif did_i_win == 1 and self.min_player == "white":
+			node.v = self.MIN * based_off_black
+			return node.v
+		#when white runs ai
+		#max player is white and wins
+		elif did_i_win == 1 and self.max_player == "white":
+			node.v = self.MAX * based_off_black
+			return node.v 
+		#min player is black and wins
+		elif did_i_win == 2 and self.min_player == "black":
+			node.v = self.MIN * based_off_black
+			return node.v
+		#it is a draw
+		elif did_i_win == 0:
+			node.v = 0
+			return node.v
+		#else we hit a cut off so we evaluate that node as a leaf node
+		else:
+			opp_to_my_castle = 1.0
+			me_to_opp_castle = 1.0
+
+			total_piece = len(node.board.black_pieces) + len(node.board.white_pieces)
+
+			#total distance to castle
+			white_to_black_castle_avg = node.board.averageDistToOppCastle("white")
+			black_to_white_castle_avg = node.board.averageDistToOppCastle("black")
+			#values for black and white
+			#i base white and black values off the opponent
+			value_black = based_off_black * self.MAX / ((black_to_white_castle_avg * total_piece * len(node.board.black_pieces)))
+			value_white = based_off_black * self.MAX / ((white_to_black_castle_avg * 50 * len(node.board.white_pieces)))
+
+			node.v = value_white + value_black
+
+			return node.v		
+
+	#utility 2 and 3
+	#if flip_flop == False: the Trapper
+	#he sets up traps to then have blood shed
+	#if flip_flop == : the Defender
+	#he basically blockades and protects his castle with his life
+	def utility2(self, node, player, flip_flop):
+		did_i_win = node.board.checkWin(player)
+		based_off_black = 1
+		if(self.max_player == "black" and flip_flop):
+			based_off_black = -1
+		else:
+			based_off_black = 1
 		#max player and player is same
 		if(did_i_win == 2):
 			node.v = self.MAX * based_off_black
@@ -305,13 +284,13 @@ class AlphaBetaAgent:
 			if self.max_player == "black":
 				if white_dist_to_black_castle < 5:
 					to_return -= random.uniform(100.0,180.0)
-				if black_dist_to_white_castle < 7: 
-					to_return += random.uniform(150.0, 200.0)
+				if black_dist_to_white_castle < 8: 
+					to_return += random.uniform(200.0, 250.0)
 			else:
 				if black_dist_to_white_castle < 5:
 					to_return -= random.uniform(100.0,180.0)
-				if white_dist_to_black_castle < 7: 
-					to_return += random.uniform(150.0, 200.0)
+				if white_dist_to_black_castle < 8: 
+					to_return += random.uniform(200.0, 250.0)
 
 			white_dist_to_black_piece = node.board.minDistToOpp("white", self.max_player)
 			black_dist_to_white_piece = node.board.minDistToOpp("black", self.max_player)
@@ -320,44 +299,6 @@ class AlphaBetaAgent:
 
 			node.v = to_return
 			return node.v
-
-	#utility 3
-	def utility3(self, node, player):
-		did_i_win = node.board.checkWin(player)
-		based_off_black = 1
-		if(self.max_player == "black"):
-			based_off_black = 1
-		else:
-			based_off_black = -1
-		#max player and player is same
-		if(did_i_win == 2):
-			node.v = self.MAX * based_off_black
-			return node.v
-		elif(did_i_win == 1):
-			node.v = self.MIN * based_off_black
-			return node.v
-		elif(did_i_win == 0):
-			node.v = 0
-			return 0
-		else:
-			if (node.board.isCastleOccupide("black")):
-				node.v = self.MAX * based_off_black
-				return node.v
-			elif (node.board.isCastleOccupide("white")):
-				node.v = self.MIN * based_off_black
-				return node.v
-
-		to_return = 0
-
-		white_pieces = len(node.board.white_pieces)
-		black_pieces = len(node.board.black_pieces)
-
-		to_return += 1 + (27*black_pieces * based_off_black) - (27*white_pieces * based_off_black)
-		to_return -= based_off_black * 2*(3**(6-node.board.minDistToOpp(player, self.max_player)))
-		to_return += based_off_black * 2*(3**(7-node.board.averageDistToOppCastle(player)))
-
-		node.v = to_return
-		return node.v
 
 	def applyAction(self, node, piece, move_to, player):
 		self.nodes += 1
