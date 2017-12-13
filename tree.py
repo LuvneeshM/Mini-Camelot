@@ -1,3 +1,10 @@
+###########
+# Luvneesh Mugrai 
+# AI Mini Camelot Project
+# Professor: Edward Wong
+# CS 4613
+###########
+
 import random
 import copy
 from board import Board

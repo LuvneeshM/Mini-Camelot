@@ -1,3 +1,10 @@
+###########
+# Luvneesh Mugrai 
+# AI Mini Camelot Project
+# Professor: Edward Wong
+# CS 4613
+###########
+
 from tree import *
 from board import Board
 import time
@@ -15,9 +22,11 @@ class AlphaBetaAgent:
 		self.max_depth = 1
 		self.MAX = 1000
 		self.MIN = -1000
+		self.end_time = None
 
 	def alphaBetaSearch(self, board, player, max_depth, start_time, level):
 
+		#soft rset
 		self.depth = 0
 		self.nodes = 0
 		self.prune_in_max = 0
@@ -26,53 +35,50 @@ class AlphaBetaAgent:
 		self.max_depth = max_depth
 
 		self.max_player = player
+		#for ai vs ai
 		if(self.max_player == "black"):
 			self.min_player = "white"
 		else:
 			self.min_player = "black"
 
+		#initial alpha, beta
 		alpha = [float(-1000)]
 		beta = [float(1000)]
 
+		#create the root of the tree
 		tree = Tree()
 		rootNode = tree.root
 
 		rootNode.board = board.clone()
 
-
 		self.start_time = start_time
-		print("# Start Time:",self.start_time)
+		#print("# Start Time:",self.start_time)
 		
 		v = self.maxValue(rootNode, alpha, beta, player)
-		print("# Elapsed Time:",time.time()-self.start_time)
-		print("# Max Depth Reached", self.max_depth)#self.max_depth)
-		print("# Nodes Generated:", self.nodes)
-		print("# Prune In Min:", self.prune_in_min)
-		print("# Prune In Max:", self.prune_in_max)
-		print("# Alpha:", alpha)
-		print("# Beta:", beta)
-		print("# V Calculated:", v)
-
+		
 		#return action in ACTIONS(state) with value v
-		print("# My V", rootNode.v)
 		for k in rootNode.child_array:
 			if k.v == v:
-				print("# Move Returning:",k.my_move)
+				#print("# Move Returning:",k.my_move)
 				return (k.my_move,v)
-				print("##############################")		
-		
+				#print("##############################")		
+
+	#Max value		
 	def maxValue(self, node, alpha, beta, player):
+		#check for terminal state or cutoff
 		if self.terminalState(node, player):
 			if (self.level == 1):
 				return self.utility(node, player)
 			elif (self.level == 2):
 				return self.utility2(node, player, True)
 			else:
-				return self.utility3(node, player, False)
+				return self.utility2(node, player, False)
 
+		#initial v
 		v = float("-inf")
 
 		#for each action a in Actions(state) do
+		#must make a capture move
 		moves = node.board.createListOfCaptureMoves(player)
 		#if no capture moves available then pick from other moves
 		if len(moves) == 0:
@@ -84,40 +90,40 @@ class AlphaBetaAgent:
 				if piece in moves.keys():
 					for move_to in moves[piece]:
 						v = max(v, self.minValue(self.applyAction(node,piece,move_to, "white"), alpha, beta,"black"))
-
+						#save current node v
 						node.v = v
-						
+						#do i prune?
 						if v > beta[0]:
 							#pruning
 							self.prune_in_max += 1
 							return v
 						alpha[0] = max(alpha[0],v)
-			
 		#for ai vs ai
 		if player == "white":
 			for piece in node.board.white_pieces:
 				if piece in moves.keys():
 					for move_to in moves[piece]:
 						v = max(v, self.minValue(self.applyAction(node,piece,move_to, "black"), alpha, beta, "white"))
-						
+						#save current node v
 						node.v = v
-
+						#do i prune?
 						if v > beta[0]:
 							#pruning
 							self.prune_in_max += 1
 							return v
 						alpha[0] = max(alpha[0],v)
-			
 		return v					
 	
+	#min val function
 	def minValue(self, node, alpha, beta, player):
+		#check for terminal state or cutoff
 		if self.terminalState(node, player):
 			if (self.level == 1):
 				return self.utility(node, player)
 			elif (self.level == 2):
 				return self.utility2(node, player, True)
 			else:
-				return self.utility3(node, player, False)
+				return self.utility2(node, player, False)
 
 		v = float("inf")
 		#for each action a in Actions(state) do
@@ -132,8 +138,9 @@ class AlphaBetaAgent:
 				if piece in moves.keys():
 					for move_to in moves[piece]:
 						v = min(v, self.maxValue(self.applyAction(node,piece,move_to, "black"), alpha, beta, "white" ))
-						
+						#save current node v
 						node.v = v
+						#do i prune
 						if v < alpha[0]:
 							self.prune_in_min += 1
 							return v
@@ -159,11 +166,9 @@ class AlphaBetaAgent:
 	def terminalState(self,node, player):
 		#check if time is up 
 		#then force this to be a terminal node
-		
-		if time.time() - self.start_time >= 10:
-			#print("over 10", player)
-			#if (node.depth == 1):
-			#	print("terminal node",node.my_move)
+		self.did_i_win = node.board.checkWin(player)
+		self.end_time = time.time()
+		if self.end_time - self.start_time >= 10:
 			return True
 		
 		#max depth
@@ -176,8 +181,7 @@ class AlphaBetaAgent:
 		Black = 2
 		Continue = 3
 		'''
-		did_i_win = node.board.checkWin(player)
-		if did_i_win != 3: 
+		if self.did_i_win != 3: 
 			return True
 
 		return False
@@ -187,7 +191,6 @@ class AlphaBetaAgent:
 	#he will decide to break stalemates to enter the war
 	def utility(self, node, player):
 
-		did_i_win = node.board.checkWin(player)
 		based_off_black = 1
 		if(self.max_player == "black"):
 			based_off_black = 1
@@ -195,24 +198,24 @@ class AlphaBetaAgent:
 			based_off_black = -1
 		#when black runs ai
 		#max player is black and wins
-		if did_i_win == 2 and self.max_player == "black":
+		if self.did_i_win == 2 and self.max_player == "black":
 			node.v = self.MAX * based_off_black
 			return node.v
 		#min player is white and wins
-		elif did_i_win == 1 and self.min_player == "white":
+		elif self.did_i_win == 1 and self.min_player == "white":
 			node.v = self.MIN * based_off_black
 			return node.v
 		#when white runs ai
 		#max player is white and wins
-		elif did_i_win == 1 and self.max_player == "white":
+		elif self.did_i_win == 1 and self.max_player == "white":
 			node.v = self.MAX * based_off_black
 			return node.v 
 		#min player is black and wins
-		elif did_i_win == 2 and self.min_player == "black":
+		elif self.did_i_win == 2 and self.min_player == "black":
 			node.v = self.MIN * based_off_black
 			return node.v
 		#it is a draw
-		elif did_i_win == 0:
+		elif self.did_i_win == 0:
 			node.v = 0
 			return node.v
 		#else we hit a cut off so we evaluate that node as a leaf node
@@ -240,20 +243,19 @@ class AlphaBetaAgent:
 	#if flip_flop == : the Defender
 	#he basically blockades and protects his castle with his life
 	def utility2(self, node, player, flip_flop):
-		did_i_win = node.board.checkWin(player)
 		based_off_black = 1
 		if(self.max_player == "black" and flip_flop):
 			based_off_black = -1
 		else:
 			based_off_black = 1
 		#max player and player is same
-		if(did_i_win == 2):
+		if(self.did_i_win == 2):
 			node.v = self.MAX * based_off_black
 			return node.v
-		elif(did_i_win == 1):
+		elif(self.did_i_win == 1):
 			node.v = self.MIN * based_off_black
 			return node.v
-		elif(did_i_win == 0):
+		elif(self.did_i_win == 0):
 			node.v = 0
 			return 0
 		else:
@@ -301,6 +303,7 @@ class AlphaBetaAgent:
 			return node.v
 
 	def applyAction(self, node, piece, move_to, player):
+		#track # nodes gen
 		self.nodes += 1
 		#make clone
 		temp_node = node.clone()

@@ -1,3 +1,10 @@
+###########
+# Luvneesh Mugrai 
+# AI Mini Camelot Project
+# Professor: Edward Wong
+# CS 4613
+###########
+
 from board import Board
 from alphaBetaAgent import AlphaBetaAgent
 import time
@@ -91,7 +98,7 @@ def humanAIFight(game_board, player, gameOn, printName, printWin, changePlayer, 
 						print("invalid, try again")
 			elif player == 1:
 				if printName:
-					print("##############################")
+					print("\n##############################")
 					print("player 2")
 					printName = False
 				aB_board = game_board.clone()
@@ -101,15 +108,26 @@ def humanAIFight(game_board, player, gameOn, printName, printWin, changePlayer, 
 				aB_agent_move = None
 				#your time starts now
 				start_time = time.time()
-				print("# Start Time:", start_time)
+				now_time = start_time
+				#print("# Start Time:", start_time)
 				#while there still is time
-				while(time.time() - start_time <= 10):
-					print("\n##### Depth", depth, "#####")
-					temp_move = aB_agent.alphaBetaSearch(aB_board, "black", depth, time.time(), level)
+				while(now_time - start_time <= 10):
+					#print("\n##### Depth", depth, "#####")
+					temp_move = aB_agent.alphaBetaSearch(aB_board, "black", depth, start_time, level)
+					now_time = time.time()	
 					depth +=1
 					if (aB_agent_move == None or temp_move[1] > aB_agent_move[1]):
 						aB_agent_move = temp_move
-				print("My Official Move is:",aB_agent_move)
+				#stats
+				print("#### Alpha Beta Search Stats ####")
+				print("# Time Elapsed:", aB_agent.end_time-start_time)
+				print("# Nodes Generated:", aB_agent.nodes)
+				print("# Depth Reached:", depth)
+				print("# Prune In Min:", aB_agent.prune_in_min)
+				print("# Prune In Max:", aB_agent.prune_in_max)
+				print("# Final v value:", aB_agent_move[1])
+				print("My Official Move is:",aB_agent_move[0])
+				print("##############################\n")
 				
 				is_valid_move = game_board.makeMove("black", aB_agent_move[0][0], aB_agent_move[0][1], True)
 				gameOn = game_board.checkWin(player)
@@ -158,18 +176,23 @@ def AIAIFight(game_board, player, gameOn, printName, printWin, changePlayer, lev
 					printName = False
 				aB_board_w = game_board.clone()
 				
-				depth = 1
+				#Ai plays the game
+				depth = 0
 				aB_agent_move = None
+				#your time starts now
 				start_time = time.time()
-				print("# Start Time:", start_time)
-				while(time.time() - start_time <= 10):
-					print("\n##### Depth", depth, "#####")
-					temp_move = aB_agent_w.alphaBetaSearch(aB_board_w, "white", depth, time.time(), level)
+				now_time = start_time
+				#print("# Start Time:", start_time)
+				#while there still is time
+				while(now_time - start_time <= 10):
 					depth +=1
+					temp_move = aB_agent_w.alphaBetaSearch(aB_board_w, "white", depth, start_time, level)
+					now_time = time.time()
+					
 					if (aB_agent_move == None or temp_move[1] > aB_agent_move[1]):
 						aB_agent_move = temp_move
 				print("My Official Move is:",aB_agent_move)
-				
+
 				is_valid_move = game_board.makeMove("white", aB_agent_move[0][0], aB_agent_move[0][1], True)
 				gameOn = game_board.checkWin(player)
 				if(is_valid_move):
@@ -185,14 +208,18 @@ def AIAIFight(game_board, player, gameOn, printName, printWin, changePlayer, lev
 					printName = False
 				aB_board = game_board.clone()
 				
-				depth = 1
+				#Ai plays the game
+				depth = 0
 				aB_agent_move = None
+				#your time starts now
 				start_time = time.time()
-				print("# Start Time:", start_time)
-				while(time.time() - start_time <= 10):
-					print("\n##### Depth", depth, "#####")
-					temp_move = aB_agent.alphaBetaSearch(aB_board, "black", depth, time.time(), level)
+				now_time = start_time
+				#while there still is time
+				while(now_time - start_time <= 10):
 					depth +=1
+					temp_move = aB_agent.alphaBetaSearch(aB_board, "black", depth, start_time, level)
+					now_time = time.time()	
+					
 					if (aB_agent_move == None or temp_move[1] > aB_agent_move[1]):
 						aB_agent_move = temp_move
 				print("My Official Move is:",aB_agent_move)

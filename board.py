@@ -1,7 +1,14 @@
+###########
+# Luvneesh Mugrai 
+# AI Mini Camelot Project
+# Professor: Edward Wong
+# CS 4613
+###########
+
 import numpy as np
 import copy
 import tkinter as tk
-from tkinter import *
+from tkinter import Canvas, Button
 import random
 
 class Board:
@@ -275,17 +282,16 @@ class Board:
 		self.two_part_move.append((row,col))
 		self.two_part_color.append(self.all_buttons[(row,col)].cget("bg"))
 		self.all_buttons[(row,col)].configure(bg="Yellow")
-
 		return (row, col)
-	
+	#player chooses first or 2nd
 	def pickPlayer(self, which_turn):
 		self.player_picked = which_turn
 		self.start_gui.destroy()
-
+	#which ai to fight
 	def pickLevel(self, which_level):
 		self.level_picked = which_level
 		self.level_gui.destroy()
-
+	#ui for canvas
 	def uiMakeCanvas(self, canvas, color, sq_size):
 		for row in range(self.rows):
 			for col in range(self.cols):
@@ -313,9 +319,8 @@ class Board:
 				if makeButton:
 					button_window = canvas.create_window(sq_size/2+col*sq_size, sq_size/2+row*sq_size,width=sq_size, height=sq_size, window=button)
 					self.all_buttons[(row,col)] = button
-	
+	#us for winner
 	def makeCanvasWinner(self, winner):
-		
 		h = 250
 		w = 300
 		
@@ -328,7 +333,7 @@ class Board:
 		canvas.itemconfig(instruct_id, text="Please close the game!")
 
 		canvas.pack()
-
+	#ui for picking turn 1 or 2 
 	def shouldIGoFirst(self):
 		self.player_picked = None
 
@@ -350,7 +355,7 @@ class Board:
 		button_window = canvas.create_window(150, 210,width=100, height=50, window=button_second)
 
 		canvas.pack()
-
+	#ui for picking ai
 	def levelSelection(self):
 		self.level_picked = None
 
@@ -465,6 +470,8 @@ class Board:
 				self.board[piece[0],piece[1]] = 0
 				if piece in self.white_castle:
 					self.board[piece[0],piece[1]] = 4
+				if piece in self.black_castle:
+					self.board[piece[0],piece[1]] = 5
 				self.board[move[0], move[1]] = 1
 			else:
 				if(piece_to_remove != None):
@@ -473,16 +480,14 @@ class Board:
 				self.black_pieces[move] = self.black_pieces.pop(piece)
 				#update board
 				self.board[piece[0],piece[1]] = 0
+				if piece in self.white_castle:
+					self.board[piece[0],piece[1]] = 4
 				if piece in self.black_castle:
 					self.board[piece[0],piece[1]] = 5
 				self.board[move[0], move[1]] = 2
 
 			if should_i_graphic == True:
 				self.updateButtons(player, piece_to_remove, piece, move)
-
-			#print("Board After\n",self.board)
-			#print("White After\n", self.white_pieces)
-			#print("Black After\n", self.black_pieces)
 
 			goodMove = True
 		else: 
@@ -491,10 +496,6 @@ class Board:
 				if piece != move:
 					self.all_buttons[move].configure(bg=self.two_part_color[1])
 			
-			#temp_color = self.white_color if player =="white" else self.black_color
-			#self.all_buttons[piece].configure(bg=temp_color)
-			#self.all_buttons[move].configure(bg="LightBlue")
-			#print ("move is invalid")
 			goodMove = False
 
 		#soft reset the two part move
@@ -636,7 +637,7 @@ class Board:
 				#out of bounds
 				if(col < 0 or col > self.cols-1 or row < 0 or row > self.rows-1):
 					continue
-				if (row == 13 and (col == 3 or col==4)):
+				if (row == 15 and (col == 3 or col==4)):
 					continue
 				#if (row == )
 				#player white, aka 1
